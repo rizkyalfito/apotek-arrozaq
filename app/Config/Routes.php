@@ -35,7 +35,7 @@ $routes->set404Override();
 
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
-$routes->get('/', 'TestAdminLTE::index');
+$routes->get('/', 'dashboard::index');
 
 // Routes untuk Autentikasi
 $routes->get('login', 'Auth::index');

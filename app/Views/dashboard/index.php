@@ -6,7 +6,7 @@
     <!-- small box -->
     <div class="small-box bg-info">
       <div class="inner">
-        <h3>0</h3>
+        <h3><?= $totalObat ?></h3>
         <p>Total Obat</p>
       </div>
       <div class="icon">
@@ -20,7 +20,7 @@
     <!-- small box -->
     <div class="small-box bg-success">
       <div class="inner">
-        <h3>0</h3>
+        <h3><?= $obatMasukBulanIni ?></h3>
         <p>Obat Masuk Bulan Ini</p>
       </div>
       <div class="icon">
@@ -34,7 +34,7 @@
     <!-- small box -->
     <div class="small-box bg-warning">
       <div class="inner">
-        <h3>0</h3>
+        <h3><?= $obatKeluarBulanIni ?></h3>
         <p>Obat Keluar Bulan Ini</p>
       </div>
       <div class="icon">
@@ -48,7 +48,7 @@
     <!-- small box -->
     <div class="small-box bg-danger">
       <div class="inner">
-        <h3>0</h3>
+        <h3><?= $obatHampirHabis ?></h3>
         <p>Obat Hampir Habis</p>
       </div>
       <div class="icon">
@@ -77,9 +77,20 @@
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td colspan="4" class="text-center">Belum ada data</td>
-            </tr>
+            <?php if (empty($obatTerbaruMasuk)) : ?>
+              <tr>
+                <td colspan="4" class="text-center">Belum ada data</td>
+              </tr>
+            <?php else : ?>
+              <?php foreach ($obatTerbaruMasuk as $item) : ?>
+                <tr>
+                  <td><?= $item['id_obat'] ?></td>
+                  <td><?= $item['nama_obat'] ?></td>
+                  <td><?= $item['jumlah'] ?></td>
+                  <td><?= date('d/m/Y', strtotime($item['tanggal_masuk'])) ?></td>
+                </tr>
+              <?php endforeach; ?>
+            <?php endif; ?>
           </tbody>
         </table>
       </div>
@@ -101,9 +112,20 @@
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td colspan="4" class="text-center">Belum ada data</td>
-            </tr>
+            <?php if (empty($obatTerbaruKeluar)) : ?>
+              <tr>
+                <td colspan="4" class="text-center">Belum ada data</td>
+              </tr>
+            <?php else : ?>
+              <?php foreach ($obatTerbaruKeluar as $item) : ?>
+                <tr>
+                  <td><?= $item['kode_transaksi'] ?></td>
+                  <td><?= $item['nama_obat'] ?></td>
+                  <td><?= $item['jumlah'] ?></td>
+                  <td><?= date('d/m/Y', strtotime($item['tanggal_penjualan'])) ?></td>
+                </tr>
+              <?php endforeach; ?>
+            <?php endif; ?>
           </tbody>
         </table>
       </div>
