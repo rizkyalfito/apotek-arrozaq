@@ -10,6 +10,6 @@ class TestAdminLTE extends BaseController
             'title' => 'Test AdminLTE'
         ];
         
-        return view('test_adminlte', $data);
+        return view('admin', $data);
     }
 }

@@ -1,11 +1,9 @@
-<?php
-
-?>
+<!-- app/Views/layouts/partials/sidebar.php -->
 <aside class="main-sidebar sidebar-dark-primary elevation-4">
   <!-- Brand Logo -->
-  <a href="index3.html" class="brand-link">
+  <a href="<?= base_url() ?>" class="brand-link">
     <img src="<?= base_url('assets/adminlte/dist/img/AdminLTELogo.png') ?>" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
-    <span class="brand-text font-weight-light">AdminLTE 3</span>
+    <span class="brand-text font-weight-light">Apotek Arrozaq</span>
   </a>
 
   <!-- Sidebar -->
@@ -16,52 +14,82 @@
         <img src="<?= base_url('assets/adminlte/dist/img/user2-160x160.jpg') ?>" class="img-circle elevation-2" alt="User Image">
       </div>
       <div class="info">
-        <a href="#" class="d-block">Username</a>
+        <a href="#" class="d-block">Admin</a>
       </div>
     </div>
 
     <!-- Sidebar Menu -->
     <nav class="mt-2">
       <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-        <!-- Add icons to the links using the .nav-icon class with font-awesome or any other icon font library -->
+        <!-- Dashboard -->
         <li class="nav-item">
-          <a href="#" class="nav-link active">
+          <a href="<?= base_url('dashboard') ?>" class="nav-link">
             <i class="nav-icon fas fa-tachometer-alt"></i>
-            <p>
-              Dashboard
-            </p>
+            <p>Dashboard</p>
           </a>
         </li>
+        
+        <!-- Data Stok Obat -->
         <li class="nav-item">
-          <a href="#" class="nav-link">
-            <i class="nav-icon fas fa-th"></i>
-            <p>
-              Menu 1
-            </p>
+          <a href="<?= base_url('obat') ?>" class="nav-link">
+            <i class="nav-icon fas fa-pills"></i>
+            <p>Data Stok Obat</p>
           </a>
         </li>
+        
+        <!-- Obat Masuk -->
+        <li class="nav-item">
+          <a href="<?= base_url('obat/masuk') ?>" class="nav-link">
+            <i class="nav-icon fas fa-arrow-circle-down"></i>
+            <p>Obat Masuk</p>
+          </a>
+        </li>
+        
+        <!-- Obat Keluar -->
+        <li class="nav-item">
+          <a href="<?= base_url('obat/keluar') ?>" class="nav-link">
+            <i class="nav-icon fas fa-arrow-circle-up"></i>
+            <p>Obat Keluar</p>
+          </a>
+        </li>
+        
+        <!-- Laporan -->
         <li class="nav-item">
           <a href="#" class="nav-link">
-            <i class="nav-icon fas fa-copy"></i>
+            <i class="nav-icon fas fa-file-alt"></i>
             <p>
-              Menu 2
-              <i class="fas fa-angle-left right"></i>
+              Laporan
+              <i class="right fas fa-angle-left"></i>
             </p>
           </a>
           <ul class="nav nav-treeview">
             <li class="nav-item">
-              <a href="#" class="nav-link">
+              <a href="<?= base_url('laporan/obat-masuk') ?>" class="nav-link">
                 <i class="far fa-circle nav-icon"></i>
-                <p>Submenu 1</p>
+                <p>Laporan Obat Masuk</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="#" class="nav-link">
+              <a href="<?= base_url('laporan/obat-keluar') ?>" class="nav-link">
                 <i class="far fa-circle nav-icon"></i>
-                <p>Submenu 2</p>
+                <p>Laporan Obat Keluar</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="<?= base_url('laporan/stok-obat') ?>" class="nav-link">
+                <i class="far fa-circle nav-icon"></i>
+                <p>Laporan Stok Obat</p>
               </a>
             </li>
           </ul>
+        </li>
+        
+        <!-- Logout -->
+        <li class="nav-item">
+          <a href="<?= base_url('logout') ?>" class="nav-link">
+            <i class="nav-icon fas fa-sign-out-alt"></i>
+            <p>Logout</p>
+          </a>
         </li>
       </ul>
     </nav>

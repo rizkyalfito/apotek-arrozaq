@@ -1,6 +1,3 @@
-<?php
-// app/Views/test_adminlte.php
-?>
 <?= $this->extend('layouts/admin') ?>
 
 <?= $this->section('content') ?>
