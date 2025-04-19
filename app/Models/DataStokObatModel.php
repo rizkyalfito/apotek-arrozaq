@@ -19,4 +19,14 @@ class DataStokObatModel extends Model
     protected $dateFormat    = 'datetime';
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';
+
+    public function notificationMinimumStock()
+    {
+        $stockObatModel = $this->db->table('data_stok_obat');
+
+        $result = $stockObatModel->where('jumlah_stok <', 10)->get()->getResultArray();
+
+        return $result;
+
+    }
 }
