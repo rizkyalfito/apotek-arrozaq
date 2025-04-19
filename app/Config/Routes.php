@@ -50,6 +50,7 @@ $routes->post('obat/simpan', 'Obat::simpan');
 $routes->get('obat/edit/(:num)', 'Obat::edit/$1');
 $routes->post('obat/update', 'Obat::update');
 $routes->get('obat/hapus/(:num)', 'Obat::hapus/$1');
+$routes->post('obat/simpan', 'Obat::simpan');
 $routes->get('obat/generate-qr/(:num)', 'Obat::generateQR/$1');
 
 // Routes untuk Obat Masuk

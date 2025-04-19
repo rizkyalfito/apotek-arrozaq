@@ -23,4 +23,12 @@ class ObatMasuk extends BaseController
         
         return view('obat/masuk/scan', $data);
     }
+    public function tambah()
+    {
+        $data = [
+            'title' => 'Tambah'
+        ];
+        
+        return view('obat/masuk/tambah', $data);
+    }
 }
