@@ -35,56 +35,62 @@ $routes->set404Override();
 
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
-$routes->get('/', 'Dashboard::index');
 
 // Routes untuk Autentikasi
-$routes->get('login', 'Auth::index');
-$routes->post('login', 'Auth::login');
-$routes->get('logout', 'Auth::logout');
-$routes->get('dashboard', 'Dashboard::index');
+$routes->group('', ['filter' => 'guest'], function ($routes) {
+    $routes->get('login', 'Auth::index');
+    $routes->post('login', 'Auth::login');
+});
+
+$routes->group('', ['filter' => 'auth'], function ($routes) {
+    $routes->get('logout', 'Auth::logout');
+
+    $routes->get('/', 'Dashboard::index');
+    $routes->get('dashboard', 'Dashboard::index');
 
 // Routes untuk Data Stok Obat
-$routes->get('obat', 'Obat::index');
-$routes->get('obat/tambah', 'Obat::tambah');
-$routes->post('obat/simpan', 'Obat::simpan');
-$routes->get('obat/edit/(:num)', 'Obat::edit/$1');
-$routes->post('obat/update/(:num)', 'Obat::update/$1');
-$routes->get('obat/hapus/(:num)', 'Obat::hapus/$1');
-$routes->get('obat/generate-qr/(:num)', 'Obat::generateQR/$1');
+    $routes->get('obat', 'Obat::index');
+    $routes->get('obat/tambah', 'Obat::tambah');
+    $routes->post('obat/simpan', 'Obat::simpan');
+    $routes->get('obat/edit/(:num)', 'Obat::edit/$1');
+    $routes->post('obat/update/(:num)', 'Obat::update/$1');
+    $routes->get('obat/hapus/(:num)', 'Obat::hapus/$1');
+    $routes->get('obat/generate-qr/(:num)', 'Obat::generateQR/$1');
 
 // Routes untuk Obat Masuk
-$routes->get('obat/masuk', 'ObatMasuk::index');
-$routes->get('obat/masuk/scan', 'ObatMasuk::scan');
-$routes->post('obat/masuk/scan-result', 'ObatMasuk::scanResult');
-$routes->get('obat/masuk/tambah', 'ObatMasuk::tambah');
-$routes->post('obat/masuk/simpan', 'ObatMasuk::simpan');
-$routes->get('obat/masuk/edit/(:num)', 'ObatMasuk::edit/$1');
-$routes->post('obat/masuk/update', 'ObatMasuk::update');
-$routes->get('obat/masuk/hapus/(:num)', 'ObatMasuk::hapus/$1');
+    $routes->get('obat/masuk', 'ObatMasuk::index');
+    $routes->get('obat/masuk/scan', 'ObatMasuk::scan');
+    $routes->post('obat/masuk/scan-result', 'ObatMasuk::scanResult');
+    $routes->get('obat/masuk/tambah', 'ObatMasuk::tambah');
+    $routes->post('obat/masuk/simpan', 'ObatMasuk::simpan');
+    $routes->get('obat/masuk/edit/(:num)', 'ObatMasuk::edit/$1');
+    $routes->post('obat/masuk/update', 'ObatMasuk::update');
+    $routes->get('obat/masuk/hapus/(:num)', 'ObatMasuk::hapus/$1');
 
-// Routes untuk Obat Keluar 
-$routes->get('obat/keluar', 'ObatKeluar::index');
-$routes->get('obat/keluar/scan', 'ObatKeluar::scan');
-$routes->post('obat/keluar/scan-result', 'ObatKeluar::scanResult');
-$routes->get('obat/keluar/tambah', 'ObatKeluar::tambah');
-$routes->post('obat/keluar/simpan', 'ObatKeluar::simpan');
-$routes->get('obat/keluar/edit/(:num)', 'ObatKeluar::edit/$1');
-$routes->post('obat/keluar/update', 'ObatKeluar::update');
-$routes->get('obat/keluar/hapus/(:num)', 'ObatKeluar::hapus/$1');
+// Routes untuk Obat Keluar
+    $routes->get('obat/keluar', 'ObatKeluar::index');
+    $routes->get('obat/keluar/scan', 'ObatKeluar::scan');
+    $routes->post('obat/keluar/scan-result', 'ObatKeluar::scanResult');
+    $routes->get('obat/keluar/tambah', 'ObatKeluar::tambah');
+    $routes->post('obat/keluar/simpan', 'ObatKeluar::simpan');
+    $routes->get('obat/keluar/edit/(:num)', 'ObatKeluar::edit/$1');
+    $routes->post('obat/keluar/update', 'ObatKeluar::update');
+    $routes->get('obat/keluar/hapus/(:num)', 'ObatKeluar::hapus/$1');
 
-// Routes untuk Laporan 
-$routes->get('laporan/obat-masuk', 'Laporan::obatMasuk');
-$routes->post('laporan/obat-masuk/filter', 'Laporan::filterObatMasuk');
-$routes->get('laporan/obat-masuk/export-pdf', 'Laporan::exportPdfObatMasuk');
-$routes->get('laporan/obat-masuk/export-excel', 'Laporan::exportExcelObatMasuk');
-$routes->get('laporan/obat-keluar', 'Laporan::obatKeluar');
-$routes->post('laporan/obat-keluar/filter', 'Laporan::filterObatKeluar');
-$routes->get('laporan/obat-keluar/export-pdf', 'Laporan::exportPdfObatKeluar');
-$routes->get('laporan/obat-keluar/export-excel', 'Laporan::exportExcelObatKeluar');
-$routes->get('laporan/stok-obat', 'Laporan::stokObat');
-$routes->post('laporan/stok-obat/filter', 'Laporan::filterStokObat');
-$routes->get('laporan/stok-obat/export-pdf', 'Laporan::exportPdfStokObat');
-$routes->get('laporan/stok-obat/export-excel', 'Laporan::exportExcelStokObat');
+// Routes untuk Laporan
+    $routes->get('laporan/obat-masuk', 'Laporan::obatMasuk');
+    $routes->post('laporan/obat-masuk/filter', 'Laporan::filterObatMasuk');
+    $routes->get('laporan/obat-masuk/export-pdf', 'Laporan::exportPdfObatMasuk');
+    $routes->get('laporan/obat-masuk/export-excel', 'Laporan::exportExcelObatMasuk');
+    $routes->get('laporan/obat-keluar', 'Laporan::obatKeluar');
+    $routes->post('laporan/obat-keluar/filter', 'Laporan::filterObatKeluar');
+    $routes->get('laporan/obat-keluar/export-pdf', 'Laporan::exportPdfObatKeluar');
+    $routes->get('laporan/obat-keluar/export-excel', 'Laporan::exportExcelObatKeluar');
+    $routes->get('laporan/stok-obat', 'Laporan::stokObat');
+    $routes->post('laporan/stok-obat/filter', 'Laporan::filterStokObat');
+    $routes->get('laporan/stok-obat/export-pdf', 'Laporan::exportPdfStokObat');
+    $routes->get('laporan/stok-obat/export-excel', 'Laporan::exportExcelStokObat');
+});
 
 
 $routes->group('admin', function($routes) {
