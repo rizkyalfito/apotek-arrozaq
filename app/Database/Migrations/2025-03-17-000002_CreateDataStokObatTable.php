@@ -13,6 +13,7 @@ class CreateDataStokObatTable extends Migration
                 'type'       => 'INT',
                 'constraint' => 30,
                 'unsigned'   => false,
+                'auto_increment' => true,
             ],
             'jumlah_stok' => [
                 'type'       => 'INT',

@@ -4,7 +4,9 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\DataStokObatModel;
+use App\Models\ObatMasukModel;
 use CodeIgniter\HTTP\ResponseInterface;
+use Config\Database;
 
 class Obat extends BaseController
 {
@@ -12,7 +14,9 @@ class Obat extends BaseController
 
     public function __construct()
     {
+        $this->db = Database::connect();
         $this->obatModel = new DataStokObatModel();
+        $this->obatMasukModel = new ObatMasukModel();
     }
 
     public function index()
@@ -27,130 +31,82 @@ class Obat extends BaseController
     public function tambah()
     {
         $data = [
-            'title' => 'Tambah Data Obat',
-            'validation' => \Config\Services::validation()
+            'title' => 'Tambah Data Obat'
         ];
         return view('obat/tambah', $data);
     }
 
     public function simpan()
     {
-        // Validasi input
-        $rules = [
-            'nama_obat' => [
-                'rules' => 'required',
-                'errors' => [
-                    'required' => 'Nama obat harus diisi'
-                ]
-            ],
-            'jumlah_stok' => [
-                'rules' => 'required|numeric',
-                'errors' => [
-                    'required' => 'Jumlah stok harus diisi',
-                    'numeric' => 'Jumlah stok harus berupa angka'
-                ]
-            ],
-            'satuan' => [
-                'rules' => 'required',
-                'errors' => [
-                    'required' => 'Satuan harus diisi'
-                ]
-            ],
-            'tanggal_kadaluwarsa' => [
-                'rules' => 'required',
-                'errors' => [
-                    'required' => 'Tanggal kadaluwarsa harus diisi'
-                ]
-            ]
+        $this->db->transStart();
+        $data = [
+            'nama_obat' => $this->request->getVar('nama_obat'),
+            'jumlah_stok' => $this->request->getVar('jumlah'),
+            'satuan' => $this->request->getVar('satuan'),
+            'tanggal_kadaluwarsa' => $this->request->getVar('expired'),
         ];
 
-        if (!$this->validate($rules)) {
-            return redirect()->to('obat/tambah')->withInput()->with('validation', $this->validator);
+        $this->obatModel->insert($data);
+
+        $this->db->transComplete();
+
+        if ($this->db->transStatus() === false) {
+            session()->setFlashdata('error', 'Gagal menyimpan data.');
+            return redirect()->to('/obat/tambah');
         }
 
-        $this->obatModel->save([
-            'nama_obat' => $this->request->getVar('nama_obat'),
-            'jumlah_stok' => $this->request->getVar('jumlah_stok'),
-            'satuan' => $this->request->getVar('satuan'),
-            'tanggal_kadaluwarsa' => $this->request->getVar('tanggal_kadaluwarsa')
-        ]);
-
-        session()->setFlashdata('pesan', 'Data berhasil ditambahkan');
-        return redirect()->to('obat');
+        return redirect()->to('/obat')->with('success', 'Berhasil menyimpan data.');
     }
 
     public function edit($id)
     {
         $data = [
             'title' => 'Edit Data Obat',
-            'validation' => \Config\Services::validation(),
             'obat' => $this->obatModel->find($id)
         ];
 
         if (empty($data['obat'])) {
-            throw new \CodeIgniter\Exceptions\PageNotFoundException('Data obat tidak ditemukan');
+            return redirect()->to('/obat')->with('error', 'Data obat tidak ada.');
         }
 
         return view('obat/edit', $data);
     }
 
-    public function update()
+    public function update($id)
     {
-        // Validasi input
-        $rules = [
-            'nama_obat' => [
-                'rules' => 'required',
-                'errors' => [
-                    'required' => 'Nama obat harus diisi'
-                ]
-            ],
-            'jumlah_stok' => [
-                'rules' => 'required|numeric',
-                'errors' => [
-                    'required' => 'Jumlah stok harus diisi',
-                    'numeric' => 'Jumlah stok harus berupa angka'
-                ]
-            ],
-            'satuan' => [
-                'rules' => 'required',
-                'errors' => [
-                    'required' => 'Satuan harus diisi'
-                ]
-            ],
-            'tanggal_kadaluwarsa' => [
-                'rules' => 'required',
-                'errors' => [
-                    'required' => 'Tanggal kadaluwarsa harus diisi'
-                ]
-            ]
+        $this->db->transStart();
+        $data = [
+            'nama_obat' => $this->request->getVar('nama_obat'),
+            'jumlah_stok' => $this->request->getVar('jumlah'),
+            'satuan' => $this->request->getVar('satuan'),
+            'tanggal_kadaluwarsa' => $this->request->getVar('expired'),
         ];
 
-        if (!$this->validate($rules)) {
-            return redirect()->to('obat/edit/' . $this->request->getVar('id_obat'))->withInput()->with('validation', $this->validator);
+        $this->obatModel->update([$id], $data);
+
+        $this->db->transComplete();
+
+        if ($this->db->transStatus() === false) {
+            session()->setFlashdata('error', 'Gagal menyimpan data.');
+            return redirect()->to('/obat/edit/' . $id);
         }
 
-        $this->obatModel->update($this->request->getVar('id_obat'), [
-            'nama_obat' => $this->request->getVar('nama_obat'),
-            'jumlah_stok' => $this->request->getVar('jumlah_stok'),
-            'satuan' => $this->request->getVar('satuan'),
-            'tanggal_kadaluwarsa' => $this->request->getVar('tanggal_kadaluwarsa')
-        ]);
-
-        session()->setFlashdata('pesan', 'Data berhasil diupdate');
-        return redirect()->to('obat');
+        return redirect()->to('/obat')->with('success', 'Berhasil menyimpan data.');
     }
 
     public function hapus($id)
     {
+        $this->db->transStart();
         $obat = $this->obatModel->find($id);
         
         if (empty($obat)) {
-            throw new \CodeIgniter\Exceptions\PageNotFoundException('Data obat tidak ditemukan');
+            return redirect()->to('obat')->with('error', 'Data obat tidak ada.');
         }
 
         $this->obatModel->delete($id);
-        session()->setFlashdata('pesan', 'Data berhasil dihapus');
-        return redirect()->to('obat');
+
+        $this->db->transComplete();
+        return redirect()->to('obat')->with('success', 'Berhasil menghapus data.');
     }
 
     public function generateQR($id)

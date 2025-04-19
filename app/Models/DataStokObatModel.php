@@ -11,13 +11,8 @@ class DataStokObatModel extends Model
     protected $useAutoIncrement = true;
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
-    protected $protectFields    = true;
-    protected $allowedFields    = [
-        'jumlah_stok', 
-        'satuan', 
-        'nama_obat', 
-        'tanggal_kadaluwarsa'
-    ];
+    protected $protectFields    = false;
+    protected $allowedFields    = [];
 
     // Dates
     protected $useTimestamps = true;

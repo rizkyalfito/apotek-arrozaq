@@ -8,20 +8,11 @@ class ObatMasukModel extends Model
 {
     protected $table            = 'obat_masuk';
     protected $primaryKey       = 'id_obat';
-    protected $useAutoIncrement = false; // Since it's a foreign key
+    protected $useAutoIncrement = true; // Since it's a foreign key
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
-    protected $protectFields    = true;
-    protected $allowedFields    = [
-        'id_obat',
-        'nama_obat',
-        'jumlah',
-        'tanggal_masuk',
-        'jenis',
-        'dosis',
-        'satuan',
-        'tanggal_kadaluwarsa'
-    ];
+    protected $protectFields    = false;
+    protected $allowedFields    = [];
 
     // Dates
     protected $useTimestamps = true;

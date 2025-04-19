@@ -35,7 +35,7 @@ $routes->set404Override();
 
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
-$routes->get('/', 'dashboard::index');
+$routes->get('/', 'Dashboard::index');
 
 // Routes untuk Autentikasi
 $routes->get('login', 'Auth::index');
@@ -48,9 +48,8 @@ $routes->get('obat', 'Obat::index');
 $routes->get('obat/tambah', 'Obat::tambah');
 $routes->post('obat/simpan', 'Obat::simpan');
 $routes->get('obat/edit/(:num)', 'Obat::edit/$1');
-$routes->post('obat/update', 'Obat::update');
+$routes->post('obat/update/(:num)', 'Obat::update/$1');
 $routes->get('obat/hapus/(:num)', 'Obat::hapus/$1');
-$routes->post('obat/simpan', 'Obat::simpan');
 $routes->get('obat/generate-qr/(:num)', 'Obat::generateQR/$1');
 
 // Routes untuk Obat Masuk
