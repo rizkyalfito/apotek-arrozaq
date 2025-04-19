@@ -37,11 +37,7 @@
         </tr>
       </thead>
       <tbody>
-        <?php if(count($this->data['obat']) < 1): ?>
-            <tr>
-                <td colspan="7" class="text-center">Belum ada data</td>
-            </tr>
-        <?php else : foreach ($this->data['obat'] as $obat) : ?>
+        <?php foreach ($this->data['obat'] as $obat) : ?>
             <tr>
                 <td><?= $obat['id_obat'] ?></td>
                 <td><?= $obat['nama_obat'] ?></td>
@@ -60,7 +56,7 @@
                     </a>
                 </td>
             </tr>
-        <?php endforeach; endif; ?>
+        <?php endforeach; ?>
       </tbody>
     </table>
   </div>
