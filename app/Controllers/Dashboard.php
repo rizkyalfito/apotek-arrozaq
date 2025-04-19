@@ -62,9 +62,53 @@ class Dashboard extends BaseController
             'obatKeluarBulanIni' => $obatKeluarBulanIni,
             'obatHampirHabis' => $obatHampirHabis,
             'obatTerbaruMasuk' => $obatTerbaruMasuk,
-            'obatTerbaruKeluar' => $obatTerbaruKeluar
+            'obatTerbaruKeluar' => $obatTerbaruKeluar,
+            'totalObatMasuk' => $this->getTotalObatMasuk(),
+            'totalObatKeluar' => $this->getTotalObatKeluar(),
         ];
         
         return view('dashboard/index', $data);
+    }
+
+    private function getTotalObatMasuk()
+    {
+        $currentYear = date('Y');
+
+        $query = $this->obatMasukModel->select('MONTH(created_at) as bulan, SUM(jumlah) as total')
+            ->where('YEAR(created_at)', $currentYear)
+            ->groupBy('MONTH(created_at)')
+            ->orderBy('MONTH(created_at)', 'ASC')
+            ->get();
+
+        $monthlyData = $query->getResult();
+
+        $salesData = array_fill(1, 12, 0);
+
+        foreach ($monthlyData as $row) {
+            $salesData[$row->bulan] = (float) $row->total;
+        }
+
+        return array_values($salesData);
+    }
+
+    private function getTotalObatKeluar()
+    {
+        $currentYear = date('Y');
+
+        $query = $this->obatKeluarModel->select('MONTH(created_at) as bulan, SUM(jumlah) as total')
+            ->where('YEAR(created_at)', $currentYear)
+            ->groupBy('MONTH(created_at)')
+            ->orderBy('MONTH(created_at)', 'ASC')
+            ->get();
+
+        $monthlyData = $query->getResult();
+
+        $salesData = array_fill(1, 12, 0);
+
+        foreach ($monthlyData as $row) {
+            $salesData[$row->bulan] = (float) $row->total;
+        }
+
+        return array_values($salesData);
     }
 }
