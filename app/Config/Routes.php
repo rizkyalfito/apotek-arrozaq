@@ -64,7 +64,7 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->get('obat/masuk/tambah', 'ObatMasuk::tambah');
     $routes->post('obat/masuk/simpan', 'ObatMasuk::simpan');
     $routes->get('obat/masuk/edit/(:num)', 'ObatMasuk::edit/$1');
-    $routes->post('obat/masuk/update', 'ObatMasuk::update');
+    $routes->post('obat/masuk/update/(:num)', 'ObatMasuk::update/$1');
     $routes->get('obat/masuk/hapus/(:num)', 'ObatMasuk::hapus/$1');
 
 // Routes untuk Obat Keluar
@@ -74,7 +74,7 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->get('obat/keluar/tambah', 'ObatKeluar::tambah');
     $routes->post('obat/keluar/simpan', 'ObatKeluar::simpan');
     $routes->get('obat/keluar/edit/(:num)', 'ObatKeluar::edit/$1');
-    $routes->post('obat/keluar/update', 'ObatKeluar::update');
+    $routes->post('obat/keluar/update/(:num)', 'ObatKeluar::update/$1');
     $routes->get('obat/keluar/hapus/(:num)', 'ObatKeluar::hapus/$1');
 
 // Routes untuk Laporan

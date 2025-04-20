@@ -14,6 +14,19 @@
     </div>
   </div>
   <div class="card-body">
+    <div class="col-12">
+        <?php if (session()->getFlashdata('error')): ?>
+            <div class="alert alert-danger small my-4" role="alert">
+                <?= session()->getFlashdata('error'); ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if (session()->getFlashdata('success')): ?>
+            <div class="alert alert-success small my-4" role="alert">
+                <?= session()->getFlashdata('success'); ?>
+            </div>
+        <?php endif; ?>
+    </div>
     <table id="tabelObatKeluar" class="table table-bordered table-striped">
       <thead>
         <tr>
@@ -27,9 +40,31 @@
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td colspan="7" class="text-center">Belum ada data</td>
-        </tr>
+        <?php if (empty($obatKeluar)): ?>
+          <tr>
+            <td colspan="7" class="text-center">Belum ada data</td>
+          </tr>
+        <?php else: ?>
+          <?php foreach ($obatKeluar as $data): ?>
+          <tr>
+            <td><?= $data['kode_transaksi'] ?></td>
+            <td><?= $data['id_obat'] ?></td>
+            <td><?= $data['nama_obat'] ?></td>
+            <td><?= $data['jumlah'] ?></td>
+            <td><?= $data['satuan'] ?></td>
+            <td><?= date('d/m/Y', strtotime($data['tanggal_penjualan'])) ?></td>
+            <td>
+              <a href="<?= base_url('obat/keluar/edit/' . $data['kode_transaksi']) ?>" class="btn btn-warning btn-sm">
+                
+                <i class="fas fa-edit"></i> Ubah
+              </a>
+              <a href="<?= base_url('obat/keluar/hapus/' . $data['kode_transaksi']) ?>" class="btn btn-danger btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?');">
+                <i class="fas fa-trash"></i> Hapus
+              </a>
+            </td>
+          </tr>
+          <?php endforeach; ?>
+        <?php endif; ?>
       </tbody>
     </table>
   </div>
@@ -39,7 +74,25 @@
 <?= $this->section('scripts') ?>
 <script>
   $(document).ready(function() {
-    $('#tabelObatKeluar').DataTable();
+    $('#tabelObatKeluar').DataTable({
+      "responsive": true,
+      "lengthChange": true,
+      "autoWidth": false,
+      "language": {
+        "search": "Cari:",
+        "lengthMenu": "Tampilkan _MENU_ data per halaman",
+        "zeroRecords": "Tidak ada data yang ditemukan",
+        "info": "Menampilkan halaman _PAGE_ dari _PAGES_",
+        "infoEmpty": "Tidak ada data yang tersedia",
+        "infoFiltered": "(difilter dari _MAX_ total data)",
+        "paginate": {
+          "first": "Pertama",
+          "last": "Terakhir",
+          "next": "Selanjutnya",
+          "previous": "Sebelumnya"
+        }
+      }
+    });
   });
 </script>
 <?= $this->endSection() ?>

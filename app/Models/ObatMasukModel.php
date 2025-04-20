@@ -7,7 +7,7 @@ use CodeIgniter\Model;
 class ObatMasukModel extends Model
 {
     protected $table            = 'obat_masuk';
-    protected $primaryKey       = 'id_obat';
+    protected $primaryKey       = 'id';
     protected $useAutoIncrement = true; // Since it's a foreign key
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;

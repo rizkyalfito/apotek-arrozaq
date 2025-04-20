@@ -13,6 +13,7 @@ class CreateObatKeluarTable extends Migration
                 'type'       => 'INT',
                 'constraint' => 30,
                 'unsigned'   => false,
+                'auto_increment' => true,
             ],
             'satuan' => [
                 'type'       => 'VARCHAR',

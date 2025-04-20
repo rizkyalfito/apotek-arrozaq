@@ -15,6 +15,12 @@
           <button class="btn btn-primary" id="startButton">Mulai Scan</button>
           <button class="btn btn-danger" id="stopButton" style="display: none;">Berhenti Scan</button>
         </div>
+        <div class="mt-3">
+          <div class="form-group">
+            <label for="qrCodeImage">Atau unggah gambar QR Code</label>
+            <input type="file" class="form-control-file" id="qrCodeImage" accept="image/*">
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -45,6 +51,7 @@
             <label for="tanggal_kadaluwarsa">Tanggal Kadaluwarsa</label>
             <input type="date" class="form-control" id="tanggal_kadaluwarsa" name="tanggal_kadaluwarsa" required>
           </div>
+          
           <div class="form-group">
             <button type="submit" class="btn btn-success" id="submitBtn" disabled>Simpan</button>
             <a href="<?= base_url('obat/masuk') ?>" class="btn btn-secondary">Kembali</a>
@@ -76,6 +83,7 @@
     const html5QrCode = new Html5Qrcode("qr-reader");
     const startButton = document.getElementById('startButton');
     const stopButton = document.getElementById('stopButton');
+    const fileInput = document.getElementById('qrCodeImage');
     
     startButton.addEventListener('click', () => {
       html5QrCode.start(
@@ -97,13 +105,42 @@
         });
     });
     
-    function onScanSuccess(decodedText, decodedResult) {
-      // Berhenti scan setelah mendapatkan hasil
-      html5QrCode.stop();
-      startButton.style.display = 'inline-block';
-      stopButton.style.display = 'none';
+    fileInput.addEventListener('change', event => {
+      if (event.target.files.length === 0) {
+        return;
+      }
       
-      // Ambil data obat dari server berdasarkan ID
+      const imageFile = event.target.files[0];
+      
+      if (html5QrCode.isScanning) {
+        html5QrCode.stop().then(() => {
+          startButton.style.display = 'inline-block';
+          stopButton.style.display = 'none';
+          processQrCodeFromImage(imageFile);
+        });
+      } else {
+        processQrCodeFromImage(imageFile);
+      }
+    });
+    
+    function processQrCodeFromImage(imageFile) {
+      html5QrCode.scanFile(imageFile, true)
+        .then(decodedText => {
+          onScanSuccess(decodedText);
+        })
+        .catch(err => {
+          alert("Error scanning QR code from image: " + err);
+        });
+    }
+    
+    function onScanSuccess(decodedText, decodedResult) {
+
+      if (html5QrCode.isScanning) {
+        html5QrCode.stop();
+        startButton.style.display = 'inline-block';
+        stopButton.style.display = 'none';
+      }
+      
       try {
         const obatId = decodedText;
         fetch('<?= base_url('obat/masuk/scan-result') ?>', {
@@ -116,7 +153,6 @@
         .then(response => response.json())
         .then(data => {
           if (data.success) {
-            // Isi form dengan data dari server
             $('#id_obat').val(data.obat.id_obat);
             $('#nama_obat').val(data.obat.nama_obat);
             $('#satuan').val(data.obat.satuan);
@@ -124,6 +160,10 @@
           } else {
             alert('Data obat tidak ditemukan!');
           }
+        })
+        .catch(error => {
+          console.error(error);
+          alert('Terjadi kesalahan saat memproses QR Code');
         });
       } catch (error) {
         console.error(error);
@@ -132,7 +172,6 @@
     }
     
     function onScanFailure(error) {
-      // Handle ketika scan gagal
       console.warn(`Scan gagal: ${error}`);
     }
   });

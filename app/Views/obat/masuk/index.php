@@ -6,14 +6,14 @@
     <div class="card">
       <div class="card-header">
         <h3 class="card-title">Data Obat Masuk</h3>
-        <div class="card-tools">
-          <a href="<?= base_url('obat/masuk/tambah') ?>" class="btn btn-primary btn-sm">
-            <i class="fas fa-plus"></i> Tambah Manual
-          </a>
-          <a href="<?= base_url('obat/masuk/scan') ?>" class="btn btn-success btn-sm">
-            <i class="fas fa-qrcode"></i> Scan QR Code
-          </a>
-        </div>
+          <div class="card-tools">
+            <a href="<?= base_url('obat/masuk/scan') ?>" class="btn btn-primary">
+              <i class="fas fa-qrcode"></i> Scan QR Code
+            </a>
+            <a href="<?= base_url('obat/masuk/tambah') ?>" class="btn btn-success">
+              <i class="fas fa-plus"></i> Tambah Data
+            </a>
+          </div>
       </div>
       <div class="card-body">
         <?php if (session()->getFlashdata('pesan')) : ?>
@@ -60,10 +60,10 @@
                     <td><?= date('d/m/Y', strtotime($row['tanggal_masuk'])) ?></td>
                     <td><?= date('d/m/Y', strtotime($row['tanggal_kadaluwarsa'])) ?></td>
                     <td>
-                      <a href="<?= base_url('obat/masuk/edit/' . $row['id_obat']) ?>" class="btn btn-warning btn-sm">
+                      <a href="<?= base_url('obat/masuk/edit/' . $row['id']) ?>" method="post" class="btn btn-warning btn-sm">
                         <i class="fas fa-edit"></i>
                       </a>
-                      <a href="<?= base_url('obat/masuk/hapus/' . $row['id_obat']) ?>" class="btn btn-danger btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')">
+                      <a href="<?= base_url('obat/masuk/hapus/' . $row['id']) ?>" class="btn btn-danger btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')">
                         <i class="fas fa-trash"></i>
                       </a>
                     </td>

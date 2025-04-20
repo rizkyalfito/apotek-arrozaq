@@ -10,7 +10,9 @@ use Config\Database;
 
 class Obat extends BaseController
 {
+    protected $db;
     protected $obatModel;
+    protected $obatMasukModel;
 
     public function __construct()
     {
@@ -47,7 +49,6 @@ class Obat extends BaseController
         ];
 
         $this->obatModel->insert($data);
-
         $this->db->transComplete();
 
         if ($this->db->transStatus() === false) {
@@ -83,7 +84,6 @@ class Obat extends BaseController
         ];
 
         $this->obatModel->update([$id], $data);
-
         $this->db->transComplete();
 
         if ($this->db->transStatus() === false) {
@@ -98,21 +98,21 @@ class Obat extends BaseController
     {
         $this->db->transStart();
         $obat = $this->obatModel->find($id);
-        
+
         if (empty($obat)) {
             return redirect()->to('obat')->with('error', 'Data obat tidak ada.');
         }
 
         $this->obatModel->delete($id);
-
         $this->db->transComplete();
+
         return redirect()->to('obat')->with('success', 'Berhasil menghapus data.');
     }
 
     public function generateQR($id)
     {
         $obat = $this->obatModel->find($id);
-        
+
         if (empty($obat)) {
             throw new \CodeIgniter\Exceptions\PageNotFoundException('Data obat tidak ditemukan');
         }
@@ -136,24 +136,24 @@ class Obat extends BaseController
     public function scanResult()
     {
         $qrData = $this->request->getPost('qr_data');
-        
+
         if (empty($qrData)) {
             return redirect()->to('obat/scan')->with('error', 'Data QR Code tidak valid');
         }
 
         try {
             $jsonData = json_decode($qrData, true);
-            
+
             if (isset($jsonData['id_obat'])) {
                 $obat = $this->obatModel->find($jsonData['id_obat']);
-                
+
                 if ($obat) {
                     return redirect()->to('obat/edit/' . $obat['id_obat'])->with('success', 'Data obat ditemukan');
                 }
             }
-            
+
             return redirect()->to('obat/scan')->with('error', 'Data obat tidak ditemukan');
-            
+
         } catch (\Exception $e) {
             return redirect()->to('obat/scan')->with('error', 'Format QR Code tidak valid');
         }

@@ -19,7 +19,7 @@
           </div>
         <?php endif; ?>
 
-        <form action="<?= base_url('obat/masuk/update') ?>" method="post">
+        <form action="<?= base_url('obat/masuk/update/' . $obatMasuk['id']) ?>" method="post">
           <input type="hidden" name="id_lama" value="<?= $obatMasuk['id_obat'] ?>">
           <input type="hidden" name="jumlah_lama" value="<?= $obatMasuk['jumlah'] ?>">
           

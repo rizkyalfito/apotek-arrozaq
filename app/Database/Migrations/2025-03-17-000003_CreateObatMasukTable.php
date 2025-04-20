@@ -9,10 +9,16 @@ class CreateObatMasukTable extends Migration
     public function up()
     {
         $this->forge->addField([
+            'id' => [
+            'type' => 'INT',
+            'constraint' => 30,
+            'unsigned' => true,
+            'auto_increment' => true,
+            ],
             'id_obat' => [
-                'type'       => 'INT',
-                'constraint' => 30,
-                'unsigned'   => false,
+            'type' => 'INT',
+            'constraint' => 30,
+            'unsigned' => false,
             ],
             'nama_obat' => [
                 'type'       => 'VARCHAR',
@@ -56,7 +62,7 @@ class CreateObatMasukTable extends Migration
                 'null' => true,
             ],
         ]);
-        $this->forge->addKey('id_obat', true);
+        $this->forge->addKey('id', true);
         $this->forge->addForeignKey('id_obat', 'data_stok_obat', 'id_obat', 'CASCADE', 'CASCADE');
         $this->forge->createTable('obat_masuk');
     }
