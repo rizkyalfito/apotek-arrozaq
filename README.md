@@ -69,3 +69,8 @@ Start the server
   php spark serve
 ```
 
+## Account Information
+
+    - Username: admin
+    - Password: admin123 
+
