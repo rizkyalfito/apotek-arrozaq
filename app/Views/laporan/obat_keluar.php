@@ -3,10 +3,10 @@
 <?= $this->section('content') ?>
 <div class="card">
   <div class="card-header">
-    <h3 class="card-title">Laporan Obat Masuk</h3>
+    <h3 class="card-title">Laporan Obat Keluar</h3>
   </div>
   <div class="card-body">
-    <form action="<?= base_url('laporan/obat-masuk/filter') ?>" method="post" class="mb-4">
+    <form action="<?= base_url('laporan/obat-keluar/filter') ?>" method="post" class="mb-4">
       <div class="row">
         <div class="col-md-4">
           <div class="form-group">
@@ -25,10 +25,10 @@
         <div class="col-md-4">
           <div class="form-group" style="margin-top: 32px;">
             <button type="submit" class="btn btn-primary">Filter</button>
-            <a href="<?= base_url('laporan/obat-masuk/export-pdf') ?>" class="btn btn-danger" target="_blank">
+            <a href="<?= base_url('laporan/obat-keluar/export-pdf') ?><?= isset($tanggal_mulai) ? '?tanggal_mulai='.$tanggal_mulai.'&tanggal_akhir='.$tanggal_akhir : '' ?>" class="btn btn-danger" target="_blank">
               <i class="fas fa-file-pdf"></i> Export PDF
             </a>
-            <a href="<?= base_url('laporan/obat-masuk/export-excel') ?>" class="btn btn-success">
+            <a href="<?= base_url('laporan/obat-keluar/export-excel') ?><?= isset($tanggal_mulai) ? '?tanggal_mulai='.$tanggal_mulai.'&tanggal_akhir='.$tanggal_akhir : '' ?>" class="btn btn-success">
               <i class="fas fa-file-excel"></i> Export Excel
             </a>
           </div>
@@ -36,32 +36,34 @@
       </div>
     </form>
     
-    <table id="tabelLaporanObatMasuk" class="table table-bordered table-striped">
+    <table id="tabelLaporanObatKeluar" class="table table-bordered table-striped">
       <thead>
         <tr>
+          <th>Kode Transaksi</th>
           <th>ID Obat</th>
           <th>Nama Obat</th>
           <th>Jumlah</th>
           <th>Satuan</th>
-          <th>Tanggal Masuk</th>
+          <th>Tanggal Penjualan</th>
           <th>Tanggal Kadaluwarsa</th>
         </tr>
       </thead>
       <tbody>
-        <?php if (isset($obatMasuk) && count($obatMasuk) > 0): ?>
-          <?php foreach ($obatMasuk as $row): ?>
+        <?php if (isset($obatKeluar) && count($obatKeluar) > 0): ?>
+          <?php foreach ($obatKeluar as $row): ?>
             <tr>
+              <td><?= $row['kode_transaksi'] ?></td>
               <td><?= $row['id_obat'] ?></td>
               <td><?= $row['nama_obat'] ?></td>
               <td><?= $row['jumlah'] ?></td>
               <td><?= $row['satuan'] ?></td>
-              <td><?= date('d-m-Y', strtotime($row['tanggal_masuk'])) ?></td>
+              <td><?= date('d-m-Y', strtotime($row['tanggal_penjualan'])) ?></td>
               <td><?= date('d-m-Y', strtotime($row['tanggal_kadaluwarsa'])) ?></td>
             </tr>
           <?php endforeach; ?>
         <?php else: ?>
           <tr>
-            <td colspan="6" class="text-center">Belum ada data</td>
+            <td colspan="7" class="text-center">Belum ada data</td>
           </tr>
         <?php endif; ?>
       </tbody>
@@ -73,7 +75,7 @@
 <?= $this->section('scripts') ?>
 <script>
   $(document).ready(function() {
-    $('#tabelLaporanObatMasuk').DataTable({
+    $('#tabelLaporanObatKeluar').DataTable({
       "responsive": true,
       "lengthChange": true,
       "autoWidth": false,

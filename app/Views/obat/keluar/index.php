@@ -55,7 +55,6 @@
             <td><?= date('d/m/Y', strtotime($data['tanggal_penjualan'])) ?></td>
             <td>
               <a href="<?= base_url('obat/keluar/edit/' . $data['kode_transaksi']) ?>" class="btn btn-warning btn-sm">
-                
                 <i class="fas fa-edit"></i> Ubah
               </a>
               <a href="<?= base_url('obat/keluar/hapus/' . $data['kode_transaksi']) ?>" class="btn btn-danger btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?');">

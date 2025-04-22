@@ -66,7 +66,22 @@
 <?= $this->section('scripts') ?>
 <script>
   $(document).ready(function() {
-    $('#tabelObat').DataTable();
+    $('#tabelObat').DataTable({
+      language: {
+        lengthMenu: "Tampilkan _MENU_ data per halaman",
+        zeroRecords: "Tidak ditemukan data yang sesuai",
+        info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
+        infoEmpty: "Menampilkan 0 sampai 0 dari 0 data",
+        infoFiltered: "(disaring dari _MAX_ data keseluruhan)",
+        search: "Cari:",
+        paginate: {
+          first: "Pertama",
+          last: "Terakhir",
+          next: "Selanjutnya",
+          previous: "Sebelumnya"
+        }
+      }
+    });
   });
 </script>
 <script>
@@ -89,4 +104,6 @@
         <?php endforeach; endif; ?>
     });
 </script>
+
+
 <?= $this->endSection() ?>

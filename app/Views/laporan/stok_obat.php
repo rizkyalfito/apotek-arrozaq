@@ -3,32 +3,26 @@
 <?= $this->section('content') ?>
 <div class="card">
   <div class="card-header">
-    <h3 class="card-title">Laporan Obat Masuk</h3>
+    <h3 class="card-title">Laporan Stok Obat</h3>
   </div>
   <div class="card-body">
-    <form action="<?= base_url('laporan/obat-masuk/filter') ?>" method="post" class="mb-4">
+    <form action="<?= base_url('laporan/stok-obat/filter') ?>" method="post" class="mb-4">
       <div class="row">
-        <div class="col-md-4">
+        <div class="col-md-8">
           <div class="form-group">
-            <label for="tanggal_mulai">Tanggal Mulai</label>
-            <input type="date" class="form-control" id="tanggal_mulai" name="tanggal_mulai" 
-                   value="<?= isset($tanggal_mulai) ? $tanggal_mulai : date('Y-m-01') ?>" required>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="form-group">
-            <label for="tanggal_akhir">Tanggal Akhir</label>
-            <input type="date" class="form-control" id="tanggal_akhir" name="tanggal_akhir" 
-                   value="<?= isset($tanggal_akhir) ? $tanggal_akhir : date('Y-m-d') ?>" required>
+            <label for="cari">Cari Obat</label>
+            <input type="text" class="form-control" id="cari" name="cari" 
+                   placeholder="Cari berdasarkan nama obat atau ID obat"
+                   value="<?= isset($cari) ? $cari : '' ?>">
           </div>
         </div>
         <div class="col-md-4">
           <div class="form-group" style="margin-top: 32px;">
-            <button type="submit" class="btn btn-primary">Filter</button>
-            <a href="<?= base_url('laporan/obat-masuk/export-pdf') ?>" class="btn btn-danger" target="_blank">
+            <button type="submit" class="btn btn-primary">Cari</button>
+            <a href="<?= base_url('laporan/stok-obat/export-pdf') ?><?= isset($cari) ? '?cari='.$cari : '' ?>" class="btn btn-danger" target="_blank">
               <i class="fas fa-file-pdf"></i> Export PDF
             </a>
-            <a href="<?= base_url('laporan/obat-masuk/export-excel') ?>" class="btn btn-success">
+            <a href="<?= base_url('laporan/stok-obat/export-excel') ?><?= isset($cari) ? '?cari='.$cari : '' ?>" class="btn btn-success">
               <i class="fas fa-file-excel"></i> Export Excel
             </a>
           </div>
@@ -36,32 +30,30 @@
       </div>
     </form>
     
-    <table id="tabelLaporanObatMasuk" class="table table-bordered table-striped">
+    <table id="tabelLaporanStokObat" class="table table-bordered table-striped">
       <thead>
         <tr>
           <th>ID Obat</th>
           <th>Nama Obat</th>
-          <th>Jumlah</th>
+          <th>Jumlah Stok</th>
           <th>Satuan</th>
-          <th>Tanggal Masuk</th>
           <th>Tanggal Kadaluwarsa</th>
         </tr>
       </thead>
       <tbody>
-        <?php if (isset($obatMasuk) && count($obatMasuk) > 0): ?>
-          <?php foreach ($obatMasuk as $row): ?>
+        <?php if (isset($stokObat) && count($stokObat) > 0): ?>
+          <?php foreach ($stokObat as $row): ?>
             <tr>
               <td><?= $row['id_obat'] ?></td>
               <td><?= $row['nama_obat'] ?></td>
-              <td><?= $row['jumlah'] ?></td>
+              <td><?= $row['jumlah_stok'] ?></td>
               <td><?= $row['satuan'] ?></td>
-              <td><?= date('d-m-Y', strtotime($row['tanggal_masuk'])) ?></td>
               <td><?= date('d-m-Y', strtotime($row['tanggal_kadaluwarsa'])) ?></td>
             </tr>
           <?php endforeach; ?>
         <?php else: ?>
           <tr>
-            <td colspan="6" class="text-center">Belum ada data</td>
+            <td colspan="5" class="text-center">Belum ada data</td>
           </tr>
         <?php endif; ?>
       </tbody>
@@ -73,7 +65,7 @@
 <?= $this->section('scripts') ?>
 <script>
   $(document).ready(function() {
-    $('#tabelLaporanObatMasuk').DataTable({
+    $('#tabelLaporanStokObat').DataTable({
       "responsive": true,
       "lengthChange": true,
       "autoWidth": false,
