@@ -76,8 +76,10 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->get('obat/keluar/edit/(:num)', 'ObatKeluar::edit/$1');
     $routes->post('obat/keluar/update/(:num)', 'ObatKeluar::update/$1');
     $routes->get('obat/keluar/hapus/(:num)', 'ObatKeluar::hapus/$1');
+});
 
-// Routes untuk Laporan
+$routes->group('', ['filter' => 'owner'], function ($routes) {
+    // Routes untuk Laporan
     $routes->get('laporan/obat-masuk', 'Laporan::obatMasuk');
     $routes->post('laporan/obat-masuk/filter', 'Laporan::filterObatMasuk');
     $routes->get('laporan/obat-masuk/export-pdf', 'Laporan::exportPdfObatMasuk');

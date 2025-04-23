@@ -41,6 +41,7 @@ class Auth extends BaseController
 
         if (password_verify($credentials['password'], $dataUser['password'])) {
             $this->session->set('isLoggedIn', true);
+            $this->session->set('level', $dataUser['status']);
             return redirect()->to('/');
         } else {
             return redirect()->to('/login')->with('error', 'Username atau password salah!');

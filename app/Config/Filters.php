@@ -4,6 +4,7 @@ namespace Config;
 
 use App\Filters\AuthFilter;
 use App\Filters\GuestFilter;
+use App\Filters\OwnerFilter;
 use CodeIgniter\Config\Filters as BaseFilters;
 use CodeIgniter\Filters\Cors;
 use CodeIgniter\Filters\CSRF;
@@ -37,6 +38,7 @@ class Filters extends BaseFilters
         'pagecache'     => PageCache::class,
         'performance'   => PerformanceMetrics::class,
         'auth'           => AuthFilter::class,
+        'owner'          => OwnerFilter::class,
         'guest'          => GuestFilter::class,
     ];
 

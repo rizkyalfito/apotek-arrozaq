@@ -70,7 +70,10 @@ Start the server
 ```
 
 ## Account Information
-
+    Admin Account:
     - Username: admin
     - Password: admin123 
+    Owner Account:
+    - Username: owner
+    - Password: owner123
 

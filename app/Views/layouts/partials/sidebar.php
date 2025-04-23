@@ -54,35 +54,40 @@
         </li>
         
         <!-- Laporan -->
-        <li class="nav-item">
-          <a href="#" class="nav-link">
-            <i class="nav-icon fas fa-file-alt"></i>
-            <p>
-              Laporan
-              <i class="right fas fa-angle-left"></i>
-            </p>
-          </a>
-          <ul class="nav nav-treeview">
+        <?php
+            $userLevel = session()->get('level');
+            if  ($userLevel === 'owner') :
+        ?>
             <li class="nav-item">
-              <a href="<?= base_url('laporan/obat-masuk') ?>" class="nav-link">
-                <i class="far fa-circle nav-icon"></i>
-                <p>Laporan Obat Masuk</p>
-              </a>
+                <a href="#" class="nav-link">
+                    <i class="nav-icon fas fa-file-alt"></i>
+                    <p>
+                        Laporan
+                        <i class="right fas fa-angle-left"></i>
+                    </p>
+                </a>
+                <ul class="nav nav-treeview">
+                    <li class="nav-item">
+                        <a href="<?= base_url('laporan/obat-masuk') ?>" class="nav-link">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Laporan Obat Masuk</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="<?= base_url('laporan/obat-keluar') ?>" class="nav-link">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Laporan Obat Keluar</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="<?= base_url('laporan/stok-obat') ?>" class="nav-link">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Laporan Stok Obat</p>
+                        </a>
+                    </li>
+                </ul>
             </li>
-            <li class="nav-item">
-              <a href="<?= base_url('laporan/obat-keluar') ?>" class="nav-link">
-                <i class="far fa-circle nav-icon"></i>
-                <p>Laporan Obat Keluar</p>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a href="<?= base_url('laporan/stok-obat') ?>" class="nav-link">
-                <i class="far fa-circle nav-icon"></i>
-                <p>Laporan Stok Obat</p>
-              </a>
-            </li>
-          </ul>
-        </li>
+       <?php endif; ?>
         
         <!-- Logout -->
         <li class="nav-item">
