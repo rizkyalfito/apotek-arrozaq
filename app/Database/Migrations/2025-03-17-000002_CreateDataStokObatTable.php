@@ -34,6 +34,12 @@ class CreateDataStokObatTable extends Migration
                 'type' => 'DATE',
                 'null' => true,
             ],
+            'harga_modal' => [
+                'type' => 'INT',
+            ],
+            'harga_jual' => [
+                'type' => 'INT',
+            ],
             'created_at' => [
                 'type' => 'DATETIME',
                 'null' => true,

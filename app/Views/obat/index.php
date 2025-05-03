@@ -28,11 +28,12 @@
       <thead>
         <tr>
           <th>ID Obat</th>
-          <th>Nama Obat</th>
+          <th>Nama Obat / BMHP</th>
           <th>Jumlah Stok</th>
           <th>Satuan</th>
-<!--          <th>Tanggal Kadaluwarsa</th>-->
-          <th>QR Code</th>
+          <th>Harga Modal</th>
+          <th>Harga Jual</th>
+          <th>Barcode</th>
           <th>Aksi</th>
         </tr>
       </thead>
@@ -43,9 +44,10 @@
                 <td><?= $obat['nama_obat'] ?></td>
                 <td><?= $obat['jumlah_stok'] ?></td>
                 <td><?= $obat['satuan'] ?></td>
-<!--                <td>--><?php //= $obat['tanggal_kadaluwarsa'] ?><!--</td>-->
+                <td>Rp. <?= number_format($obat['harga_modal'], 0, ',', '.'); ?></td>
+                <td>Rp. <?= number_format($obat['harga_jual'], 0, ',', '.'); ?></td>
                 <td>
-                    <div id="qrcode-<?= $obat['id_obat'] ?>"></div>
+                    <svg id="barcode-<?= $obat['id_obat'] ?>"></svg>
                 </td>
                 <td>
                     <a href="<?= base_url('obat/edit/' . $obat['id_obat']) ?>" class="btn btn-warning btn-sm">
@@ -88,18 +90,17 @@
     document.addEventListener('DOMContentLoaded', function() {
         <?php if(isset($this->data['obat'])) : foreach ($this->data['obat'] as $obat) : ?>
         try {
-            new QRCode(document.getElementById("qrcode-<?= $obat['id_obat'] ?>"), {
-                text: "<?= $obat['id_obat'] ?>-<?= $obat['nama_obat'] ?>",
-                width: 50,
+            new JsBarcode("#barcode-<?= $obat['id_obat'] ?>", "<?= $obat['id_obat'] ?>-<?= $obat['nama_obat'] ?>" , {
+                format: 'CODE128',
                 height: 50,
-                colorDark: "#000000",
-                colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.H
+                width: 1.5,
+                lineColor: '#00000',
+                displayValue: false
             });
         } catch(e) {
-            console.error("Exception with QR code generation for ID: <?= $obat['id_obat'] ?>", e);
-            document.getElementById("qrcode-<?= $obat['id_obat'] ?>").innerHTML =
-                '<span class="text-danger">Error: QR Code tidak dapat dibuat</span>';
+            console.error("Exception with Barcode generation for ID: <?= $obat['id_obat'] ?>", e);
+            document.getElementById("barcode-<?= $obat['id_obat'] ?>").innerHTML =
+                '<span class="text-danger">Error: Barcode tidak dapat dibuat</span>';
         }
         <?php endforeach; endif; ?>
     });

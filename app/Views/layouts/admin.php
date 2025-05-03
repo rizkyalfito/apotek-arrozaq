@@ -16,6 +16,8 @@
   <link rel="stylesheet" href="<?= base_url('assets/adminlte/dist/css/adminlte.min.css') ?>">
     <!--  QRCodeJS  -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!--    BarcodeJS-->
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 <!--    ChartJS -->
     <link rel="stylesheet" href="<?= base_url('assets/adminlte/plugins/chart.js/Chart.min.css') ?>">
     <!-- Additional CSS -->

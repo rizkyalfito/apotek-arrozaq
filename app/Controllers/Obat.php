@@ -45,6 +45,8 @@ class Obat extends BaseController
             'nama_obat' => $this->request->getVar('nama_obat'),
             'jumlah_stok' => $this->request->getVar('jumlah'),
             'satuan' => $this->request->getVar('satuan'),
+            'harga_modal' => $this->request->getVar('harga_modal'),
+            'harga_jual' => $this->request->getVar('harga_jual'),
             'tanggal_kadaluwarsa' => $this->request->getVar('expired'),
         ];
 
@@ -80,6 +82,8 @@ class Obat extends BaseController
             'nama_obat' => $this->request->getVar('nama_obat'),
             'jumlah_stok' => $this->request->getVar('jumlah'),
             'satuan' => $this->request->getVar('satuan'),
+            'harga_modal' => $this->request->getVar('harga_modal'),
+            'harga_jual' => $this->request->getVar('harga_jual'),
             'tanggal_kadaluwarsa' => $this->request->getVar('expired'),
         ];
 

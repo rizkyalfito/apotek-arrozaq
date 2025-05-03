@@ -19,7 +19,7 @@
                         <form action="<?= base_url('obat/simpan') ?>" method="post">
                             <div class="row mb-3">
                                 <div class="col-md-4">
-                                    <label for="obat" class="form-label">Nama Obat</label>
+                                    <label for="obat" class="form-label">Nama Obat / BMHP</label>
                                     <input type="text" class="form-control" id="obat" placeholder="Masukkan nama obat" name="nama_obat" required>
                                 </div>
                                 <div class="col-md-4">
@@ -42,6 +42,14 @@
                                 </div>
                             </div>
                             <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label for="harga_modal" class="form-label">Harga Modal</label>
+                                    <input type="number" class="form-control" id="harga_modal" placeholder="Masukkan Harga Modal" name="harga_modal" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="harga_jual" class="form-label">Harga Jual</label>
+                                    <input type="number" class="form-control" id="harga_jual" placeholder="Masukkan Harga Jual" name="harga_jual" required>
+                                </div>
                                 <div class="col-md-4">
                                     <label for="expired" class="form-label">Expired</label>
                                     <input type="date" class="form-control" id="expired" name="expired" required>
