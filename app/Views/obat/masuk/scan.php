@@ -5,19 +5,26 @@
   <div class="col-md-6">
     <div class="card">
       <div class="card-header">
-        <h3 class="card-title">Scan QR Code Obat</h3>
+        <h3 class="card-title">Scan Barcode Obat</h3>
       </div>
       <div class="card-body">
+        <!-- Tambahan input untuk barcode scanner -->
+        <div class="form-group mb-3">
+          <label for="barcodeInput">Input Barcode </label>
+          <input type="text" class="form-control" id="barcodeInput" placeholder="Scan barcode atau masukkan kode secara manual" autofocus>
+          <small class="form-text text-muted">Gunakan alat scanner barcode atau ketik kode secara manual, lalu tekan Enter</small>
+        </div>
+
         <div class="text-center mb-3">
           <div id="qr-reader" style="width: 100%"></div>
         </div>
-        <div class="text-center">
+        <!-- <div class="text-center">
           <button class="btn btn-primary" id="startButton">Mulai Scan</button>
           <button class="btn btn-danger" id="stopButton" style="display: none;">Berhenti Scan</button>
-        </div>
+        </div> -->
         <div class="mt-3">
           <div class="form-group">
-            <label for="qrCodeImage">Atau unggah gambar QR Code</label>
+            <label for="qrCodeImage">Atau unggah gambar Barcode</label>
             <input type="file" class="form-control-file" id="qrCodeImage" accept="image/*">
           </div>
         </div>
@@ -80,100 +87,126 @@
 <script src="https://unpkg.com/html5-qrcode"></script>
 <script>
   $(document).ready(function() {
-    const html5QrCode = new Html5Qrcode("qr-reader");
-    const startButton = document.getElementById('startButton');
-    const stopButton = document.getElementById('stopButton');
-    const fileInput = document.getElementById('qrCodeImage');
-    
-    startButton.addEventListener('click', () => {
-      html5QrCode.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 250, height: 250 } },
-        onScanSuccess,
-        onScanFailure)
-        .then(() => {
-          startButton.style.display = 'none';
-          stopButton.style.display = 'inline-block';
-        });
-    });
-    
-    stopButton.addEventListener('click', () => {
-      html5QrCode.stop()
-        .then(() => {
-          startButton.style.display = 'inline-block';
-          stopButton.style.display = 'none';
-        });
-    });
-    
-    fileInput.addEventListener('change', event => {
-      if (event.target.files.length === 0) {
-        return;
-      }
-      
-      const imageFile = event.target.files[0];
-      
-      if (html5QrCode.isScanning) {
-        html5QrCode.stop().then(() => {
-          startButton.style.display = 'inline-block';
-          stopButton.style.display = 'none';
-          processQrCodeFromImage(imageFile);
-        });
-      } else {
-        processQrCodeFromImage(imageFile);
-      }
-    });
-    
-    function processQrCodeFromImage(imageFile) {
-      html5QrCode.scanFile(imageFile, true)
-        .then(decodedText => {
-          onScanSuccess(decodedText);
-        })
-        .catch(err => {
-          alert("Error scanning QR code from image: " + err);
-        });
-    }
-    
-    function onScanSuccess(decodedText, decodedResult) {
+  const html5QrCode = new Html5Qrcode("qr-reader");
+  const startButton = document.getElementById('startButton');
+  const stopButton = document.getElementById('stopButton');
+  const fileInput = document.getElementById('qrCodeImage');
+  const barcodeInput = document.getElementById('barcodeInput');
+  
+  // Set focus to barcode input when page loads
+  barcodeInput.focus();
 
-      if (html5QrCode.isScanning) {
-        html5QrCode.stop();
-        startButton.style.display = 'inline-block';
-        stopButton.style.display = 'none';
-      }
-      
-      try {
-        const obatId = decodedText;
-        fetch('<?= base_url('obat/masuk/scan-result') ?>', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ id_obat: obatId })
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            $('#id_obat').val(data.obat.id_obat);
-            $('#nama_obat').val(data.obat.nama_obat);
-            $('#satuan').val(data.obat.satuan);
-            $('#submitBtn').prop('disabled', false);
-          } else {
-            alert('Data obat tidak ditemukan!');
-          }
-        })
-        .catch(error => {
-          console.error(error);
-          alert('Terjadi kesalahan saat memproses QR Code');
-        });
-      } catch (error) {
-        console.error(error);
-        alert('Terjadi kesalahan saat memproses QR Code');
-      }
-    }
-    
-    function onScanFailure(error) {
-      console.warn(`Scan gagal: ${error}`);
+  // Handle barcode input dengan onchange, tanpa perlu Enter
+  barcodeInput.addEventListener('input', function() {
+    const barcodeValue = this.value.trim();
+    if (barcodeValue) {
+      processBarcode(barcodeValue);
+      this.value = ''; // Clear input setelah diproses
+      setTimeout(() => this.focus(), 100); // Kembalikan fokus ke input untuk scan berikutnya
     }
   });
+
+  function processBarcode(barcodeValue) {
+    fetchMedicineData(barcodeValue);
+  }
+  
+  startButton.addEventListener('click', () => {
+    html5QrCode.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: { width: 250, height: 250 } },
+      onScanSuccess,
+      onScanFailure)
+      .then(() => {
+        startButton.style.display = 'none';
+        stopButton.style.display = 'inline-block';
+      });
+  });
+  
+  stopButton.addEventListener('click', () => {
+    html5QrCode.stop()
+      .then(() => {
+        startButton.style.display = 'inline-block';
+        stopButton.style.display = 'none';
+      });
+  });
+  
+  fileInput.addEventListener('change', event => {
+    if (event.target.files.length === 0) {
+      return;
+    }
+    
+    const imageFile = event.target.files[0];
+    
+    if (html5QrCode.isScanning) {
+      html5QrCode.stop().then(() => {
+        startButton.style.display = 'inline-block';
+        stopButton.style.display = 'none';
+        processQrCodeFromImage(imageFile);
+      });
+    } else {
+      processQrCodeFromImage(imageFile);
+    }
+  });
+  
+  function processQrCodeFromImage(imageFile) {
+    html5QrCode.scanFile(imageFile, true)
+      .then(decodedText => {
+        onScanSuccess(decodedText);
+      })
+      .catch(err => {
+        alert("Error scanning QR code from image: " + err);
+      });
+  }
+  
+  function onScanSuccess(decodedText, decodedResult) {
+    if (html5QrCode.isScanning) {
+      html5QrCode.stop();
+      startButton.style.display = 'inline-block';
+      stopButton.style.display = 'none';
+    }
+    
+    fetchMedicineData(decodedText);
+  }
+  
+  function fetchMedicineData(obatId) {
+    try {
+      fetch('<?= base_url('obat/masuk/scan-result') ?>', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id_obat: obatId })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          $('#id_obat').val(data.obat.id_obat);
+          $('#nama_obat').val(data.obat.nama_obat);
+          $('#satuan').val(data.obat.satuan);
+          $('#submitBtn').prop('disabled', false);
+          
+          // Focus on jumlah field after successful scan
+          $('#jumlah').focus();
+        } else {
+          alert('Data obat tidak ditemukan!');
+          barcodeInput.focus(); // Return focus to barcode input
+        }
+      })
+      .catch(error => {
+        console.error(error);
+        alert('Terjadi kesalahan saat memproses kode');
+        barcodeInput.focus(); // Return focus to barcode input
+      });
+    } catch (error) {
+      console.error(error);
+      alert('Terjadi kesalahan saat memproses kode');
+      barcodeInput.focus(); // Return focus to barcode input
+    }
+  }
+  
+  function onScanFailure(error) {
+    console.warn(`Scan gagal: ${error}`);
+  }
+});
 </script>
 <?= $this->endSection() ?>

@@ -5,19 +5,26 @@
   <div class="col-md-6">
     <div class="card">
       <div class="card-header">
-        <h3 class="card-title">Scan QR Code Obat Keluar</h3>
+        <h3 class="card-title">Scan Barcode Obat Keluar</h3>
       </div>
       <div class="card-body">
+        <!-- Tambahan input untuk barcode scanner -->
+        <div class="form-group mb-3">
+          <label for="barcodeInput">Input Barcode</label>
+          <input type="text" class="form-control" id="barcodeInput" placeholder="Scan barcode atau masukkan kode secara manual" autofocus>
+          <small class="form-text text-muted">Gunakan alat scanner barcode atau ketik kode secara manual</small>
+        </div>
+
         <div class="text-center mb-3">
           <div id="qr-reader" style="width: 100%"></div>
         </div>
-        <div class="text-center">
+        <!-- <div class="text-center">
           <button class="btn btn-primary" id="startButton">Mulai Scan</button>
           <button class="btn btn-danger" id="stopButton" style="display: none;">Berhenti Scan</button>
-        </div>
+        </div> -->
         <div class="mt-3">
           <div class="form-group">
-            <label for="qrCodeImage">Atau unggah gambar QR Code</label>
+            <label for="qrCodeImage">Atau unggah gambar Barcode</label>
             <input type="file" class="form-control-file" id="qrCodeImage" accept="image/*">
           </div>
         </div>
@@ -95,235 +102,196 @@
 <script src="https://unpkg.com/html5-qrcode"></script>
 <script>
   $(document).ready(function() {
-    const html5QrCode = new Html5Qrcode("qr-reader");
-    const startButton = document.getElementById('startButton');
-    const stopButton = document.getElementById('stopButton');
-    const fileInput = document.getElementById('qrCodeImage');
-    const manualIdBtn = document.getElementById('processManualId');
-    const debugInfo = document.getElementById('debug-info');
-    
-    function showDebug(message, isError = false) {
+  const html5QrCode = new Html5Qrcode("qr-reader");
+  const startButton = document.getElementById('startButton');
+  const stopButton = document.getElementById('stopButton');
+  const fileInput = document.getElementById('qrCodeImage');
+  const barcodeInput = document.getElementById('barcodeInput');
+  const debugInfo = document.getElementById('debug-info');
+  
+  // Set focus to barcode input when page loads
+  barcodeInput.focus();
+
+  // Handle barcode input dengan onchange, tanpa perlu Enter
+  barcodeInput.addEventListener('input', function() {
+    const barcodeValue = this.value.trim();
+    if (barcodeValue) {
+      showDebug(`Processing manual barcode: ${barcodeValue}`);
+      processObatId(barcodeValue);
+      this.value = ''; // Clear input setelah diproses
+      setTimeout(() => this.focus(), 100); // Kembalikan fokus ke input untuk scan berikutnya
+    }
+  });
+  
+  function showDebug(message, isError = false) {
+    if (isError || debugInfo.style.display === 'block') {
       debugInfo.style.display = 'block';
       const timestamp = new Date().toLocaleTimeString();
       debugInfo.innerHTML += `<div class="${isError ? 'text-danger' : ''}">[${timestamp}] ${message}</div>`;
       debugInfo.scrollTop = debugInfo.scrollHeight;
     }
-    
-    startButton.addEventListener('click', () => {
-      html5QrCode.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 250, height: 250 } },
-        onScanSuccess,
-        onScanFailure)
-        .then(() => {
-          startButton.style.display = 'none';
-          stopButton.style.display = 'inline-block';
-          showDebug("Scanner started");
-        })
-        .catch(err => {
-          showDebug("Error starting scanner: " + err, true);
-        });
-    });
-    
-    stopButton.addEventListener('click', () => {
-      html5QrCode.stop()
-        .then(() => {
-          startButton.style.display = 'inline-block';
-          stopButton.style.display = 'none';
-          showDebug("Scanner stopped");
-        })
-        .catch(err => {
-          showDebug("Error stopping scanner: " + err, true);
-        });
-    });
-    
-    fileInput.addEventListener('change', event => {
-      if (event.target.files.length === 0) {
-        return;
-      }
-      
-      const imageFile = event.target.files[0];
-      showDebug(`Processing image file: ${imageFile.name}`);
-      
-      if (html5QrCode.isScanning) {
-        html5QrCode.stop().then(() => {
-          startButton.style.display = 'inline-block';
-          stopButton.style.display = 'none';
-          processQrCodeFromImage(imageFile);
-        }).catch(err => {
-          showDebug("Error stopping scanner: " + err, true);
-          processQrCodeFromImage(imageFile);
-        });
-      } else {
-        processQrCodeFromImage(imageFile);
-      }
-    });
-    
-    manualIdBtn.addEventListener('click', () => {
-      const manualId = document.getElementById('manualId').value.trim();
-      if (manualId) {
-        showDebug(`Processing manual ID: ${manualId}`);
-        processObatId(manualId);
-      } else {
-        showDebug("ID Obat tidak boleh kosong", true);
-      }
-    });
-    
-    function processQrCodeFromImage(imageFile) {
-      html5QrCode.scanFile(imageFile, true)
-        .then(decodedText => {
-          showDebug(`QR code detected from image: ${decodedText}`);
-          onScanSuccess(decodedText);
-        })
-        .catch(err => {
-          showDebug("Error scanning QR code from image: " + err, true);
-        });
-    }
-    
-    function onScanSuccess(decodedText, decodedResult) {
-      showDebug(`QR Code detected: ${decodedText}`);
-      
-      if (html5QrCode.isScanning) {
-        html5QrCode.stop().then(() => {
-          startButton.style.display = 'inline-block';
-          stopButton.style.display = 'none';
-        }).catch(err => {
-          showDebug("Error stopping scanner: " + err, true);
-        });
-      }
-      
-      processObatId(decodedText);
-    }
-    
-    function processObatId(obatIdRaw) {
-  try {
-    let obatId = obatIdRaw;
-    
-    showDebug(`Processing QR data: ${obatIdRaw}`);
-
-    if (obatIdRaw.startsWith('{') && obatIdRaw.endsWith('}')) {
-      try {
-        const jsonData = JSON.parse(obatIdRaw);
-        if (jsonData.id_obat) {
-          obatId = jsonData.id_obat;
-        }
-      } catch (jsonError) {
-        showDebug(`Failed to parse JSON: ${jsonError}`, true);
-      }
-    }
-    else if (obatIdRaw.includes('-')) {
-      obatId = obatIdRaw.split('-')[0];
-    }
-    
-    if (!/^\d+$/.test(obatId)) {
-      showDebug(`ID is not a number: ${obatId}`, true);
-      alert('Format QR Code tidak valid! ID harus berupa angka.');
+  }
+  
+  startButton.addEventListener('click', () => {
+    html5QrCode.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: { width: 250, height: 250 } },
+      onScanSuccess,
+      onScanFailure)
+      .then(() => {
+        startButton.style.display = 'none';
+        stopButton.style.display = 'inline-block';
+        showDebug("Scanner started");
+      })
+      .catch(err => {
+        showDebug("Error starting scanner: " + err, true);
+      });
+  });
+  
+  stopButton.addEventListener('click', () => {
+    html5QrCode.stop()
+      .then(() => {
+        startButton.style.display = 'inline-block';
+        stopButton.style.display = 'none';
+        showDebug("Scanner stopped");
+      })
+      .catch(err => {
+        showDebug("Error stopping scanner: " + err, true);
+      });
+  });
+  
+  fileInput.addEventListener('change', event => {
+    if (event.target.files.length === 0) {
       return;
     }
     
-    $.ajax({
-      url: '<?= base_url('obat/keluar/scan-result') ?>',
-      type: 'POST',
-      contentType: 'application/json',
-      data: JSON.stringify({ id_obat: obatId }),
-      success: function(response) {
-        debugInfo.style.display = 'none';
-        processServerResponse(response);
-      },
-      error: function(xhr, status, err) {
-        showDebug(`AJAX error: ${err}`, true);
-        showDebug(`Status: ${status}`, true);
-        showDebug(`Response: ${xhr.responseText}`, true);
-        alert('Terjadi kesalahan saat memproses QR Code');
-      }
-    });
-  } catch (error) {
-    showDebug(`Processing error: ${error}`, true);
-    alert('Terjadi kesalahan saat memproses QR Code');
-  }
-}
-
-function onScanSuccess(decodedText, decodedResult) {
-  showDebug(`QR Code terdeteksi`);
-  
-  if (html5QrCode.isScanning) {
-    html5QrCode.stop().then(() => {
-      startButton.style.display = 'inline-block';
-      stopButton.style.display = 'none';
-    }).catch(err => {
-      showDebug("Error stopping scanner: " + err, true);
-    });
-  }
-  
-  processObatId(decodedText);
-}
-
-function processServerResponse(response) {
-  if (response.success) {
-    const obat = response.obat;
+    const imageFile = event.target.files[0];
+    showDebug(`Processing image file: ${imageFile.name}`);
     
-    $('#id_obat').val(obat.id_obat);
-    $('#nama_obat').val(obat.nama_obat);
-    $('#stok_tersedia').val(obat.jumlah_stok);
-    $('#satuan').val(obat.satuan);
-    $('#submitBtn').prop('disabled', false);
-    
-
-    $('#jumlah').attr('max', obat.jumlah_stok);
-    $('#jumlah').on('input', function() {
-      const jumlah = parseInt($(this).val()) || 0;
-      const stok = parseInt(obat.jumlah_stok) || 0;
-      
-      if (jumlah > stok) {
-        alert('Jumlah yang dimasukkan melebihi stok tersedia!');
-        $(this).val(stok);
-      }
-    });
-  } else {
-    showDebug('Data obat tidak ditemukan!', true);
-    alert('Data obat tidak ditemukan!');
-  }
-}
-
-function showDebug(message, isError = false) {
-
-  if (isError || debugInfo.style.display === 'block') {
-    debugInfo.style.display = 'block';
-    const timestamp = new Date().toLocaleTimeString();
-    debugInfo.innerHTML += `<div class="${isError ? 'text-danger' : ''}">[${timestamp}] ${message}</div>`;
-    debugInfo.scrollTop = debugInfo.scrollHeight;
-  }
-}
-    
-    function processServerResponse(response) {
-      
-      if (response.success) {
-        const obat = response.obat;
-        
-        $('#id_obat').val(obat.id_obat);
-        $('#nama_obat').val(obat.nama_obat);
-        $('#stok_tersedia').val(obat.jumlah_stok);
-        $('#satuan').val(obat.satuan);
-        $('#submitBtn').prop('disabled', false);
-        
-        $('#jumlah').attr('max', obat.jumlah_stok);
-        $('#jumlah').on('input', function() {
-          const jumlah = parseInt($(this).val()) || 0;
-          const stok = parseInt(obat.jumlah_stok) || 0;
-          
-          if (jumlah > stok) {
-            alert('Jumlah yang dimasukkan melebihi stok tersedia!');
-            $(this).val(stok);
-          }
-        });
-      } else {
-        alert('Data obat tidak ditemukan!');
-      }
-    }
-    
-    function onScanFailure(error) {
-      console.warn(`Scan gagal: ${error}`);
+    if (html5QrCode.isScanning) {
+      html5QrCode.stop().then(() => {
+        startButton.style.display = 'inline-block';
+        stopButton.style.display = 'none';
+        processQrCodeFromImage(imageFile);
+      }).catch(err => {
+        showDebug("Error stopping scanner: " + err, true);
+        processQrCodeFromImage(imageFile);
+      });
+    } else {
+      processQrCodeFromImage(imageFile);
     }
   });
+  
+  function processQrCodeFromImage(imageFile) {
+    html5QrCode.scanFile(imageFile, true)
+      .then(decodedText => {
+        showDebug(`QR code detected from image: ${decodedText}`);
+        onScanSuccess(decodedText);
+      })
+      .catch(err => {
+        showDebug("Error scanning QR code from image: " + err, true);
+      });
+  }
+  
+  function onScanSuccess(decodedText, decodedResult) {
+    showDebug(`QR Code terdeteksi`);
+    
+    if (html5QrCode.isScanning) {
+      html5QrCode.stop().then(() => {
+        startButton.style.display = 'inline-block';
+        stopButton.style.display = 'none';
+      }).catch(err => {
+        showDebug("Error stopping scanner: " + err, true);
+      });
+    }
+    
+    processObatId(decodedText);
+  }
+  
+  function processObatId(obatIdRaw) {
+    try {
+      let obatId = obatIdRaw;
+      
+      showDebug(`Processing QR/barcode data: ${obatIdRaw}`);
+
+      if (obatIdRaw.startsWith('{') && obatIdRaw.endsWith('}')) {
+        try {
+          const jsonData = JSON.parse(obatIdRaw);
+          if (jsonData.id_obat) {
+            obatId = jsonData.id_obat;
+          }
+        } catch (jsonError) {
+          showDebug(`Failed to parse JSON: ${jsonError}`, true);
+        }
+      }
+      else if (obatIdRaw.includes('-')) {
+        obatId = obatIdRaw.split('-')[0];
+      }
+      
+      if (!/^\d+$/.test(obatId)) {
+        showDebug(`ID is not a number: ${obatId}`, true);
+        alert('Format QR Code/Barcode tidak valid! ID harus berupa angka.');
+        barcodeInput.focus(); // Return focus to barcode input
+        return;
+      }
+      
+      $.ajax({
+        url: '<?= base_url('obat/keluar/scan-result') ?>',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ id_obat: obatId }),
+        success: function(response) {
+          debugInfo.style.display = 'none';
+          processServerResponse(response);
+        },
+        error: function(xhr, status, err) {
+          showDebug(`AJAX error: ${err}`, true);
+          showDebug(`Status: ${status}`, true);
+          showDebug(`Response: ${xhr.responseText}`, true);
+          alert('Terjadi kesalahan saat memproses kode');
+          barcodeInput.focus(); // Return focus to barcode input
+        }
+      });
+    } catch (error) {
+      showDebug(`Processing error: ${error}`, true);
+      alert('Terjadi kesalahan saat memproses kode');
+      barcodeInput.focus(); // Return focus to barcode input
+    }
+  }
+  
+  function processServerResponse(response) {
+    if (response.success) {
+      const obat = response.obat;
+      
+      $('#id_obat').val(obat.id_obat);
+      $('#nama_obat').val(obat.nama_obat);
+      $('#stok_tersedia').val(obat.jumlah_stok);
+      $('#satuan').val(obat.satuan);
+      $('#submitBtn').prop('disabled', false);
+      
+      $('#jumlah').attr('max', obat.jumlah_stok);
+      $('#jumlah').on('input', function() {
+        const jumlah = parseInt($(this).val()) || 0;
+        const stok = parseInt(obat.jumlah_stok) || 0;
+        
+        if (jumlah > stok) {
+          alert('Jumlah yang dimasukkan melebihi stok tersedia!');
+          $(this).val(stok);
+        }
+      });
+      
+      // Focus on jumlah field after successful scan
+      $('#jumlah').focus();
+    } else {
+      showDebug('Data obat tidak ditemukan!', true);
+      alert('Data obat tidak ditemukan!');
+      barcodeInput.focus(); // Return focus to barcode input
+    }
+  }
+  
+  function onScanFailure(error) {
+    console.warn(`Scan gagal: ${error}`);
+  }
+});
 </script>
 <?= $this->endSection() ?>

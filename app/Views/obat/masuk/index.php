@@ -8,7 +8,7 @@
         <h3 class="card-title">Data Obat Masuk</h3>
           <div class="card-tools">
             <a href="<?= base_url('obat/masuk/scan') ?>" class="btn btn-primary">
-              <i class="fas fa-qrcode"></i> Scan QR Code
+              <i class="fas fa-qrcode"></i> Scan Barcode
             </a>
             <a href="<?= base_url('obat/masuk/tambah') ?>" class="btn btn-success">
               <i class="fas fa-plus"></i> Tambah Data
