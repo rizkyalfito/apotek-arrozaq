@@ -33,6 +33,9 @@
                                         <option value="Ampul">Ampul</option>
                                         <option value="BKS">BKS</option>
                                         <option value="Botol">Botol</option>
+                                        <option value="Tablet">Tablet</option>
+                                        <option value="Sirup">Sirup</option>
+                                        <option value="Saset">Saset</option>
                                         <option value="Box">Box</option>
                                         <option value="Dus">Dus</option>
                                         <option value="Inj">Inj</option>

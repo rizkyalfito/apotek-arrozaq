@@ -29,7 +29,7 @@
                                 <div class="col-md-4">
                                     <label for="satuan" class="form-label">Satuan</label>
                                     <?php
-                                    $satuan_options = ['Ampul', 'BKS', 'Botol', 'Box', 'Dus', 'Inj', 'Kamar', 'Kapsul'];
+                                    $satuan_options = ['Ampul', 'BKS', 'Botol', 'Tablet','Sirup','Saset', 'Box', 'Dus', 'Inj', 'Kamar', 'Kapsul'];
                                     $selected_satuan = $this->data['obat']['satuan'] ?? '';
                                     ?>
 

@@ -2,8 +2,8 @@
 <aside class="main-sidebar sidebar-dark-primary elevation-4">
   <!-- Brand Logo -->
   <a href="<?= base_url() ?>" class="brand-link">
-    <img src="<?= base_url('assets/adminlte/dist/img/AdminLTELogo.png') ?>" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
-    <span class="brand-text font-weight-light">Apotek Arrozaq</span>
+    <img src="<?= base_url('assets/adminlte/dist/img/logo-apotek.jpg') ?>" alt="Ar-Rozaq Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
+    <span class="brand-text font-weight-bold">APOTEK AR-ROZZAQ</span>
   </a>
 
   <!-- Sidebar -->
@@ -11,7 +11,7 @@
     <!-- Sidebar user panel (optional) -->
     <div class="user-panel mt-3 pb-3 mb-3 d-flex">
       <div class="image">
-        <img src="<?= base_url('assets/adminlte/dist/img/user2-160x160.jpg') ?>" class="img-circle elevation-2" alt="User Image">
+      <i class="fas fa-user-circle img-circle elevation-2" style="font-size: 2.1rem; color: #c2c7d0;"></i>
       </div>
       <div class="info">
         <a href="#" class="d-block">Admin</a>
