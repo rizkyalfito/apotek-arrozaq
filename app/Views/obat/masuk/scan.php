@@ -22,12 +22,12 @@
           <button class="btn btn-primary" id="startButton">Mulai Scan</button>
           <button class="btn btn-danger" id="stopButton" style="display: none;">Berhenti Scan</button>
         </div> -->
-        <div class="mt-3">
+        <!-- <div class="mt-3">
           <div class="form-group">
             <label for="qrCodeImage">Atau unggah gambar Barcode</label>
             <input type="file" class="form-control-file" id="qrCodeImage" accept="image/*">
           </div>
-        </div>
+        </div> -->
       </div>
     </div>
   </div>

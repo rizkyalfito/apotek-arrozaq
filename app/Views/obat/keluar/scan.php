@@ -22,12 +22,12 @@
           <button class="btn btn-primary" id="startButton">Mulai Scan</button>
           <button class="btn btn-danger" id="stopButton" style="display: none;">Berhenti Scan</button>
         </div> -->
-        <div class="mt-3">
+        <!-- <div class="mt-3">
           <div class="form-group">
             <label for="qrCodeImage">Atau unggah gambar Barcode</label>
             <input type="file" class="form-control-file" id="qrCodeImage" accept="image/*">
           </div>
-        </div>
+        </div> -->
         <div class="mt-3">
           <div id="debug-info" class="alert alert-info" style="display: none;"></div>
         </div>
@@ -101,7 +101,7 @@
 <?= $this->section('scripts') ?>
 <script src="https://unpkg.com/html5-qrcode"></script>
 <script>
-  $(document).ready(function() {
+$(document).ready(function() {
   const html5QrCode = new Html5Qrcode("qr-reader");
   const startButton = document.getElementById('startButton');
   const stopButton = document.getElementById('stopButton');
@@ -111,27 +111,62 @@
   
   // Set focus to barcode input when page loads
   barcodeInput.focus();
+  
+  // Variabel untuk menyimpan timer debounce
+  let barcodeTimer = null;
+  // Waktu tunggu dalam milidetik sebelum proses input barcode
+  const BARCODE_DELAY = 500;
 
-  // Handle barcode input dengan onchange, tanpa perlu Enter
+  // Handle barcode input dengan debounce untuk menunggu input lengkap
   barcodeInput.addEventListener('input', function() {
+    // Clear timer sebelumnya jika ada
+    if (barcodeTimer) {
+      clearTimeout(barcodeTimer);
+    }
+    
     const barcodeValue = this.value.trim();
     if (barcodeValue) {
-      showDebug(`Processing manual barcode: ${barcodeValue}`);
-      processObatId(barcodeValue);
-      this.value = ''; // Clear input setelah diproses
-      setTimeout(() => this.focus(), 100); // Kembalikan fokus ke input untuk scan berikutnya
+      // Set timer baru untuk menunggu sebelum memproses
+      barcodeTimer = setTimeout(() => {
+        showDebug(`Processing manual barcode: ${barcodeValue}`);
+        processObatId(barcodeValue);
+        this.value = ''; // Clear input setelah diproses
+        this.focus(); // Kembalikan fokus ke input untuk scan berikutnya
+      }, BARCODE_DELAY);
+    }
+  });
+
+  // Tambahan: Handle input dengan tombol Enter untuk proses segera
+  barcodeInput.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (barcodeTimer) {
+        clearTimeout(barcodeTimer);
+      }
+      
+      const barcodeValue = this.value.trim();
+      if (barcodeValue) {
+        showDebug(`Processing manual barcode (Enter pressed): ${barcodeValue}`);
+        processObatId(barcodeValue);
+        this.value = ''; // Clear input setelah diproses
+        this.focus(); // Kembalikan fokus ke input untuk scan berikutnya
+      }
     }
   });
   
   function showDebug(message, isError = false) {
-    if (isError || debugInfo.style.display === 'block') {
+    if (isError) {
+      // Selalu tampilkan pesan error
       debugInfo.style.display = 'block';
+    }
+    
+    if (isError || debugInfo.style.display === 'block') {
       const timestamp = new Date().toLocaleTimeString();
       debugInfo.innerHTML += `<div class="${isError ? 'text-danger' : ''}">[${timestamp}] ${message}</div>`;
       debugInfo.scrollTop = debugInfo.scrollHeight;
     }
   }
-  
+
   startButton.addEventListener('click', () => {
     html5QrCode.start(
       { facingMode: "environment" },
@@ -194,7 +229,7 @@
   }
   
   function onScanSuccess(decodedText, decodedResult) {
-    showDebug(`QR Code terdeteksi`);
+    showDebug(`QR Code terdeteksi: ${decodedText}`);
     
     if (html5QrCode.isScanning) {
       html5QrCode.stop().then(() => {
@@ -214,20 +249,27 @@
       
       showDebug(`Processing QR/barcode data: ${obatIdRaw}`);
 
+      // Handle jika QR code dalam format JSON
       if (obatIdRaw.startsWith('{') && obatIdRaw.endsWith('}')) {
         try {
           const jsonData = JSON.parse(obatIdRaw);
           if (jsonData.id_obat) {
             obatId = jsonData.id_obat;
+            showDebug(`Extracted ID from JSON: ${obatId}`);
           }
         } catch (jsonError) {
           showDebug(`Failed to parse JSON: ${jsonError}`, true);
         }
       }
+      // Handle jika ada format dengan tanda "-" (seperti pada hasil scan yang ditampilkan)
       else if (obatIdRaw.includes('-')) {
-        obatId = obatIdRaw.split('-')[0];
+        const parts = obatIdRaw.split('-');
+        // Ambil bagian pertama yang berisi ID (contoh: "10-Biolysin" → ambil "10")
+        obatId = parts[0].trim();
+        showDebug(`Extracted ID from hyphenated string: ${obatId}`);
       }
       
+      // Pastikan ID adalah angka
       if (!/^\d+$/.test(obatId)) {
         showDebug(`ID is not a number: ${obatId}`, true);
         alert('Format QR Code/Barcode tidak valid! ID harus berupa angka.');
@@ -235,13 +277,15 @@
         return;
       }
       
+      showDebug(`Sending ID to server: ${obatId}`);
+      
+      // Kirim ke server
       $.ajax({
         url: '<?= base_url('obat/keluar/scan-result') ?>',
         type: 'POST',
         contentType: 'application/json',
         data: JSON.stringify({ id_obat: obatId }),
         success: function(response) {
-          debugInfo.style.display = 'none';
           processServerResponse(response);
         },
         error: function(xhr, status, err) {
@@ -261,7 +305,11 @@
   
   function processServerResponse(response) {
     if (response.success) {
+      // Sembunyikan debug info jika sukses
+      debugInfo.style.display = 'none';
+      
       const obat = response.obat;
+      showDebug(`Data obat ditemukan: ${obat.nama_obat} (ID: ${obat.id_obat})`);
       
       $('#id_obat').val(obat.id_obat);
       $('#nama_obat').val(obat.nama_obat);
@@ -270,7 +318,7 @@
       $('#submitBtn').prop('disabled', false);
       
       $('#jumlah').attr('max', obat.jumlah_stok);
-      $('#jumlah').on('input', function() {
+      $('#jumlah').off('input').on('input', function() {
         const jumlah = parseInt($(this).val()) || 0;
         const stok = parseInt(obat.jumlah_stok) || 0;
         
@@ -283,7 +331,7 @@
       // Focus on jumlah field after successful scan
       $('#jumlah').focus();
     } else {
-      showDebug('Data obat tidak ditemukan!', true);
+      showDebug(`Data obat tidak ditemukan: ${response.message || 'Unknown error'}`, true);
       alert('Data obat tidak ditemukan!');
       barcodeInput.focus(); // Return focus to barcode input
     }
