@@ -24,43 +24,47 @@
               </div>
           <?php endif; ?>
       </div>
-    <table id="tabelObat" class="table table-bordered table-striped">
-      <thead>
-        <tr>
-          <th>ID Obat</th>
-          <th>Nama Obat / BMHP</th>
-          <th>Jumlah Stok</th>
-          <th>Satuan</th>
-          <th>Harga Modal</th>
-          <th>Harga Jual</th>
-          <th>Barcode</th>
-          <th>Aksi</th>
-        </tr>
-      </thead>
-      <tbody>
-        <?php foreach ($this->data['obat'] as $obat) : ?>
-            <tr>
-                <td><?= $obat['id_obat'] ?></td>
-                <td><?= $obat['nama_obat'] ?></td>
-                <td><?= $obat['jumlah_stok'] ?></td>
-                <td><?= $obat['satuan'] ?></td>
-                <td>Rp. <?= number_format($obat['harga_modal'], 0, ',', '.'); ?></td>
-                <td>Rp. <?= number_format($obat['harga_jual'], 0, ',', '.'); ?></td>
-                <td>
-                    <svg id="barcode-<?= $obat['id_obat'] ?>"></svg>
-                </td>
-                <td>
-                    <a href="<?= base_url('obat/edit/' . $obat['id_obat']) ?>" class="btn btn-warning btn-sm">
-                        Ubah
-                    </a>
-                    <a href="<?= base_url('obat/hapus/' . $obat['id_obat']) ?>" class="btn btn-danger btn-sm">
-                        Hapus
-                    </a>
-                </td>
-            </tr>
-        <?php endforeach; ?>
-      </tbody>
-    </table>
+    <div class="table-responsive">
+      <table id="tabelObat" class="table table-bordered table-striped">
+        <thead>
+          <tr>
+            <th>ID Obat</th>
+            <th>Nama Obat / BMHP</th>
+            <th>Jumlah Stok</th>
+            <th>Satuan</th>
+            <th>Harga Modal</th>
+            <th>Harga Jual</th>
+            <th>Barcode</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php foreach ($this->data['obat'] as $obat) : ?>
+              <tr>
+                  <td><?= $obat['id_obat'] ?></td>
+                  <td><?= $obat['nama_obat'] ?></td>
+                  <td><?= $obat['jumlah_stok'] ?></td>
+                  <td><?= $obat['satuan'] ?></td>
+                  <td>Rp <?= number_format($obat['harga_modal'], 0, ',', '.') ?>,-</td>
+                  <td>Rp <?= number_format($obat['harga_jual'], 0, ',', '.') ?>,-</td>
+                  <td>
+                      <svg id="barcode-<?= $obat['id_obat'] ?>" class="img-fluid"></svg>
+                  </td>
+                  <td>
+                      <div class="btn-group">
+                          <a href="<?= base_url('obat/edit/' . $obat['id_obat']) ?>" class="btn btn-warning btn-sm">
+                              <i class="fas fa-edit"></i> Ubah
+                          </a>
+                          <a href="<?= base_url('obat/hapus/' . $obat['id_obat']) ?>" class="btn btn-danger btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus obat ini?');">
+                              <i class="fas fa-trash"></i> Hapus
+                          </a>
+                      </div>
+                  </td>
+              </tr>
+          <?php endforeach; ?>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 <?= $this->endSection() ?>
@@ -69,6 +73,7 @@
 <script>
   $(document).ready(function() {
     $('#tabelObat').DataTable({
+      responsive: true,
       language: {
         lengthMenu: "Tampilkan _MENU_ data per halaman",
         zeroRecords: "Tidak ditemukan data yang sesuai",
@@ -92,10 +97,11 @@
         try {
             new JsBarcode("#barcode-<?= $obat['id_obat'] ?>", "<?= $obat['id_obat'] ?>-<?= $obat['nama_obat'] ?>" , {
                 format: 'CODE128',
-                height: 50,
+                height: 40,
                 width: 1.5,
-                lineColor: '#00000',
-                displayValue: false
+                lineColor: '#000000',
+                displayValue: false,
+                margin: 0
             });
         } catch(e) {
             console.error("Exception with Barcode generation for ID: <?= $obat['id_obat'] ?>", e);
@@ -105,6 +111,5 @@
         <?php endforeach; endif; ?>
     });
 </script>
-
 
 <?= $this->endSection() ?>
