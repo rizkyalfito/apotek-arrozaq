@@ -40,25 +40,68 @@ class ObatMasuk extends BaseController
         return view('obat/masuk/scan', $data);
     }
 
-    public function scanResult()
-    {
-        $json = $this->request->getJSON();
-        $id_obat = $json->id_obat ?? '';
-
-        $obat = $this->stokObatModel->find($id_obat);
-        
-        if ($obat) {
-            return $this->response->setJSON([
-                'success' => true,
-                'obat' => $obat
-            ]);
-        } else {
-            return $this->response->setJSON([
-                'success' => false,
-                'message' => 'Data obat tidak ditemukan'
-            ]);
-        }
+    // Contoh perbaikan untuk controller "Obat/Masuk" di CodeIgniter
+public function scanResult() {
+    // Pastikan request berupa AJAX
+    if (!$this->request->isAJAX()) {
+        return $this->response->setJSON([
+            'success' => false,
+            'message' => 'Invalid request method'
+        ]);
     }
+    
+    // Ambil data dari request JSON
+    $json = $this->request->getJSON(true);
+    
+    // Log untuk troubleshooting
+    log_message('info', 'Barcode scan received: ' . json_encode($json));
+    
+    if (!isset($json['id_obat'])) {
+        return $this->response->setJSON([
+            'success' => false,
+            'message' => 'ID Obat tidak ditemukan pada request'
+        ]);
+    }
+    
+    // Bersihkan ID obat dari karakter yang tidak diinginkan
+    $idObat = trim($json['id_obat']);
+    
+    // Log ID yang akan dicari
+    log_message('info', 'Searching for medicine with ID: ' . $idObat);
+    
+    // Jika ID merupakan digit pertama dari kode yang lebih panjang, 
+    // coba cari dengan wildcard atau regex
+    $obatModel = new DataStokObatModel();
+    
+    // Coba pencarian persis
+    $obat = $obatModel->where('id_obat', $idObat)->first();
+    
+    // Jika tidak ditemukan, coba cek apakah ID ini merupakan bagian dari ID lain
+    // Ini untuk kasus di mana scanner hanya membaca sebagian dari barcode
+    if (!$obat) {
+        log_message('info', 'Exact match not found, trying alternative search');
+        
+        // Untuk database MySQL
+        $obat = $obatModel->like('id_obat', $idObat)->first();
+        
+        // Jika database yang digunakan adalah PostgreSQL, gunakan ini:
+        // $obat = $obatModel->where("id_obat::text LIKE ?", ['%' . $idObat . '%'])->first();
+    }
+    
+    if ($obat) {
+        log_message('info', 'Obat found: ' . json_encode($obat));
+        return $this->response->setJSON([
+            'success' => true,
+            'obat' => $obat
+        ]);
+    } else {
+        log_message('info', 'Obat not found for ID: ' . $idObat);
+        return $this->response->setJSON([
+            'success' => false,
+            'message' => 'Data obat tidak ditemukan'
+        ]);
+    }
+}
 
     public function tambah()
     {

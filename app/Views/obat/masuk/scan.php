@@ -96,18 +96,33 @@
   // Set focus to barcode input when page loads
   barcodeInput.focus();
 
-  // Handle barcode input dengan onchange, tanpa perlu Enter
-  barcodeInput.addEventListener('input', function() {
+  // Handle barcode input dengan event keydown untuk Enter
+  barcodeInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const barcodeValue = this.value.trim();
+      if (barcodeValue) {
+        processBarcode(barcodeValue);
+        this.value = ''; // Clear input setelah diproses
+      }
+    }
+  });
+  
+  // Tambahkan event untuk focus out (misalnya jika user mengklik di luar input)
+  barcodeInput.addEventListener('blur', function() {
     const barcodeValue = this.value.trim();
     if (barcodeValue) {
       processBarcode(barcodeValue);
       this.value = ''; // Clear input setelah diproses
-      setTimeout(() => this.focus(), 100); // Kembalikan fokus ke input untuk scan berikutnya
     }
+    // Jangan kembalikan fokus di sini untuk mencegah loop
   });
 
   function processBarcode(barcodeValue) {
-    fetchMedicineData(barcodeValue);
+    // Hapus karakter non-alphanumeric yang mungkin menyebabkan masalah
+    const cleanedBarcode = barcodeValue.replace(/[^\w-]/g, '');
+    console.log("Processing barcode:", cleanedBarcode);
+    fetchMedicineData(cleanedBarcode);
   }
   
   startButton.addEventListener('click', () => {
@@ -159,26 +174,36 @@
   }
   
   function onScanSuccess(decodedText, decodedResult) {
+    console.log("Scan result:", decodedText);
     if (html5QrCode.isScanning) {
       html5QrCode.stop();
       startButton.style.display = 'inline-block';
       stopButton.style.display = 'none';
     }
     
-    fetchMedicineData(decodedText);
+    // Proses hasil scan
+    processBarcode(decodedText);
   }
   
   function fetchMedicineData(obatId) {
     try {
+      // Tambahkan logging untuk troubleshooting
+      console.log("Fetching data for obat ID:", obatId);
+      
       fetch('<?= base_url('obat/masuk/scan-result') ?>', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
         },
         body: JSON.stringify({ id_obat: obatId })
       })
-      .then(response => response.json())
+      .then(response => {
+        console.log("Server response status:", response.status);
+        return response.json();
+      })
       .then(data => {
+        console.log("Server response data:", data);
         if (data.success) {
           $('#id_obat').val(data.obat.id_obat);
           $('#nama_obat').val(data.obat.nama_obat);
@@ -188,18 +213,18 @@
           // Focus on jumlah field after successful scan
           $('#jumlah').focus();
         } else {
-          alert('Data obat tidak ditemukan!');
+          alert('Data obat tidak ditemukan: ' + obatId);
           barcodeInput.focus(); // Return focus to barcode input
         }
       })
       .catch(error => {
-        console.error(error);
-        alert('Terjadi kesalahan saat memproses kode');
+        console.error("Fetch error:", error);
+        alert('Terjadi kesalahan saat memproses kode: ' + error.message);
         barcodeInput.focus(); // Return focus to barcode input
       });
     } catch (error) {
-      console.error(error);
-      alert('Terjadi kesalahan saat memproses kode');
+      console.error("General error:", error);
+      alert('Terjadi kesalahan: ' + error.message);
       barcodeInput.focus(); // Return focus to barcode input
     }
   }
