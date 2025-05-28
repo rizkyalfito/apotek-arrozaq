@@ -114,45 +114,80 @@ public function scanResult() {
     }
 
     public function simpan()
-    {
-        $this->db->transStart();
-        
-        $id_obat = $this->request->getVar('id_obat');
-        $jumlah = (int)$this->request->getVar('jumlah');
+{
+    $this->db->transStart();
+    
+    $id_obat = $this->request->getVar('id_obat');
+    $jumlah = (int)$this->request->getVar('jumlah');
+    $tanggal_masuk = $this->request->getVar('tanggal_masuk') ?: date('Y-m-d');
+    $tanggal_kadaluwarsa = $this->request->getVar('tanggal_kadaluwarsa');
 
-        $obat = $this->stokObatModel->find($id_obat);
-        
-        if (!$obat) {
-            $this->db->transRollback();
-            return redirect()->to('obat/masuk')->with('error', 'Data obat tidak ditemukan');
-        }
+    $obat = $this->stokObatModel->find($id_obat);
+    
+    if (!$obat) {
+        $this->db->transRollback();
+        return redirect()->to('obat/masuk')->with('error', 'Data obat tidak ditemukan');
+    }
 
+    // Cek apakah sudah ada entry dengan id_obat dan tanggal_masuk yang sama
+    $existingEntry = $this->obatMasukModel
+        ->where('id_obat', $id_obat)
+        ->where('tanggal_masuk', $tanggal_masuk)
+        ->where('tanggal_kadaluwarsa', $tanggal_kadaluwarsa)
+        ->first();
+
+    if ($existingEntry) {
+        // Jika sudah ada, update jumlahnya (tambahkan ke jumlah yang sudah ada)
+        $jumlahBaru = $existingEntry['jumlah'] + $jumlah;
+        
+        $dataUpdate = [
+            'jumlah' => $jumlahBaru,
+            'tanggal_kadaluwarsa' => $tanggal_kadaluwarsa // Update tanggal kadaluwarsa juga
+        ];
+        
+        $this->obatMasukModel->update($existingEntry['id'], $dataUpdate);
+        
+        // Update stok obat (hanya tambah jumlah baru yang diinput)
+        $stokBaru = $obat['jumlah_stok'] + $jumlah;
+        
+        $this->stokObatModel->update($id_obat, [
+            'jumlah_stok' => $stokBaru,
+            'tanggal_kadaluwarsa' => $tanggal_kadaluwarsa
+        ]);
+        
+        $message = 'Data obat masuk berhasil diupdate (ditambahkan ke entry yang sudah ada)';
+    } else {
+        // Jika belum ada, buat entry baru
         $dataObatMasuk = [
             'id_obat' => $id_obat,
             'nama_obat' => $obat['nama_obat'],
             'jumlah' => $jumlah,
             'satuan' => $obat['satuan'],
-            'tanggal_masuk' => date('Y-m-d'),
-            'tanggal_kadaluwarsa' => $this->request->getVar('tanggal_kadaluwarsa')
+            'tanggal_masuk' => $tanggal_masuk,
+            'tanggal_kadaluwarsa' => $tanggal_kadaluwarsa
         ];
         
         $this->obatMasukModel->insert($dataObatMasuk);
 
+        // Update stok obat
         $stokBaru = $obat['jumlah_stok'] + $jumlah;
         
         $this->stokObatModel->update($id_obat, [
             'jumlah_stok' => $stokBaru,
-            'tanggal_kadaluwarsa' => $this->request->getVar('tanggal_kadaluwarsa')
+            'tanggal_kadaluwarsa' => $tanggal_kadaluwarsa
         ]);
         
-        $this->db->transComplete();
-        
-        if ($this->db->transStatus() === false) {
-            return redirect()->to('obat/masuk')->with('error', 'Gagal menyimpan data obat masuk');
-        }
-        
-        return redirect()->to('obat/masuk')->with('pesan', 'Data obat masuk berhasil disimpan');
+        $message = 'Data obat masuk berhasil disimpan';
     }
+    
+    $this->db->transComplete();
+    
+    if ($this->db->transStatus() === false) {
+        return redirect()->to('obat/masuk')->with('error', 'Gagal menyimpan data obat masuk');
+    }
+    
+    return redirect()->to('obat/masuk')->with('pesan', $message);
+}
 
     public function edit($id)
     {

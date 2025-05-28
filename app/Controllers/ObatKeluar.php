@@ -95,49 +95,82 @@ class ObatKeluar extends BaseController
     }
 
     public function simpan()
-    {
-        $this->db->transStart();
-        
-        $id_obat = $this->request->getVar('id_obat');
-        $jumlah = (int)$this->request->getVar('jumlah');
-        
-        $obat = $this->stokObatModel->find($id_obat);
-        
-        if (!$obat) {
-            $this->db->transRollback();
-            return redirect()->to('obat/keluar')->with('error', 'Data obat tidak ditemukan');
-        }
+{
+    $this->db->transStart();
+    
+    $id_obat = $this->request->getVar('id_obat');
+    $jumlah = (int)$this->request->getVar('jumlah');
+    $tanggal_penjualan = $this->request->getVar('tanggal_penjualan') ?: date('Y-m-d');
+    
+    $obat = $this->stokObatModel->find($id_obat);
+    
+    if (!$obat) {
+        $this->db->transRollback();
+        return redirect()->to('obat/keluar')->with('error', 'Data obat tidak ditemukan');
+    }
 
-        if ($obat['jumlah_stok'] < $jumlah) {
-            $this->db->transRollback();
-            return redirect()->to('obat/keluar/tambah')->with('error', 'Jumlah stok tidak mencukupi. Stok saat ini: ' . $obat['jumlah_stok']);
-        }
+    if ($obat['jumlah_stok'] < $jumlah) {
+        $this->db->transRollback();
+        return redirect()->to('obat/keluar/tambah')->with('error', 'Jumlah stok tidak mencukupi. Stok saat ini: ' . $obat['jumlah_stok']);
+    }
 
+    // Cek apakah sudah ada entry dengan id_obat dan tanggal_penjualan yang sama
+    $existingEntry = $this->obatKeluarModel
+        ->where('id_obat', $id_obat)
+        ->where('tanggal_penjualan', $tanggal_penjualan)
+        ->first();
+
+    if ($existingEntry) {
+        // Jika sudah ada, update jumlahnya (tambahkan ke jumlah yang sudah ada)
+        $jumlahBaru = $existingEntry['jumlah'] + $jumlah;
+
+        $dataUpdate = [
+            'jumlah' => $jumlahBaru
+        ];
+
+        // Update menggunakan primary key - sesuaikan dengan nama field primary key di tabel Anda
+        $primaryKeyField = $this->obatKeluarModel->primaryKey; // Ambil nama primary key dari model
+        $this->obatKeluarModel->update($existingEntry[$primaryKeyField], $dataUpdate);
+
+        // Update stok obat (hanya kurangi jumlah baru yang diinput)
+        $stokBaru = $obat['jumlah_stok'] - $jumlah;
+
+        $this->stokObatModel->update($id_obat, [
+            'jumlah_stok' => $stokBaru
+        ]);
+
+        $message = 'Data obat keluar berhasil diupdate';
+    } else {
+        // Jika belum ada, buat entry baru
         $dataObatKeluar = [
             'id_obat' => $id_obat,
             'nama_obat' => $obat['nama_obat'],
             'jumlah' => $jumlah,
             'satuan' => $obat['satuan'],
-            'tanggal_penjualan' => $this->request->getVar('tanggal_penjualan'),
+            'tanggal_penjualan' => $tanggal_penjualan,
             'tanggal_kadaluwarsa' => $obat['tanggal_kadaluwarsa']
         ];
         
         $this->obatKeluarModel->insert($dataObatKeluar);
 
+        // Update stok obat
         $stokBaru = $obat['jumlah_stok'] - $jumlah;
         
         $this->stokObatModel->update($id_obat, [
             'jumlah_stok' => $stokBaru
         ]);
-        
-        $this->db->transComplete();
-        
-        if ($this->db->transStatus() === false) {
-            return redirect()->to('obat/keluar')->with('error', 'Gagal menyimpan data obat keluar');
-        }
-        
-        return redirect()->to('obat/keluar')->with('success', 'Data obat keluar berhasil disimpan');
+
+        $message = 'Data obat keluar berhasil disimpan';
     }
+    
+    $this->db->transComplete();
+    
+    if ($this->db->transStatus() === false) {
+        return redirect()->to('obat/keluar')->with('error', 'Gagal menyimpan data obat keluar');
+    }
+    
+    return redirect()->to('obat/keluar')->with('success', $message);
+}
 
     public function edit($kode)
     {
