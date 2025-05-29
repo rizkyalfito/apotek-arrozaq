@@ -11,10 +11,21 @@
     <!-- Sidebar user panel (optional) -->
     <div class="user-panel mt-3 pb-3 mb-3 d-flex">
       <div class="image">
-      <i class="fas fa-user-circle img-circle elevation-2" style="font-size: 2.1rem; color: #c2c7d0;"></i>
+        <i class="fas fa-user-circle img-circle elevation-2" style="font-size: 2.1rem; color: #c2c7d0;"></i>
       </div>
       <div class="info">
-        <a href="#" class="d-block">Admin</a>
+        <?php 
+        $userLevel = session()->get('level');
+        // Tampilkan role secara dinamis
+        $roleDisplay = [
+            'owner' => 'Owner',
+            'admin' => 'Admin'
+        ];
+        
+        $currentRole = $roleDisplay[$userLevel] ?? 'User';
+        ?>
+        <a href="#" class="d-block"><?= $currentRole ?></a>
+        
       </div>
     </div>
 
@@ -53,11 +64,8 @@
           </a>
         </li>
         
-        <!-- Laporan -->
-        <?php
-            $userLevel = session()->get('level');
-            if  ($userLevel === 'owner') :
-        ?>
+        <!-- Laporan - Hanya untuk Owner -->
+        <?php if ($userLevel === 'owner') : ?>
             <li class="nav-item">
                 <a href="#" class="nav-link">
                     <i class="nav-icon fas fa-file-alt"></i>
@@ -87,7 +95,7 @@
                     </li>
                 </ul>
             </li>
-       <?php endif; ?>
+        <?php endif; ?>
         
         <!-- Logout -->
         <li class="nav-item">
