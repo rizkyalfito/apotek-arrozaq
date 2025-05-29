@@ -1,6 +1,10 @@
 <?= $this->extend('layouts/admin') ?>
 
 <?= $this->section('content') ?>
+<?php 
+// Load barcode helper untuk view
+helper('barcode'); 
+?>
 <div class="card">
   <div class="card-header">
     <h3 class="card-title">Data Stok Obat</h3>
@@ -39,23 +43,21 @@
           </tr>
         </thead>
         <tbody>
-          <?php foreach ($this->data['obat'] as $obat) : ?>
+          <?php foreach ($obat as $item) : ?>
               <tr>
-                  <td><?= $obat['id_obat'] ?></td>
-                  <td><?= $obat['nama_obat'] ?></td>
-                  <td><?= $obat['jumlah_stok'] ?></td>
-                  <td><?= $obat['satuan'] ?></td>
-                  <td>Rp <?= number_format($obat['harga_modal'], 0, ',', '.') ?>,-</td>
-                  <td>Rp <?= number_format($obat['harga_jual'], 0, ',', '.') ?>,-</td>
-                  <td>
-                      <svg id="barcode-<?= $obat['id_obat'] ?>" class="img-fluid"></svg>
-                  </td>
+                  <td><?= $item['id_obat'] ?></td>
+                  <td><?= $item['nama_obat'] ?></td>
+                  <td><?= $item['jumlah_stok'] ?></td>
+                  <td><?= $item['satuan'] ?></td>
+                  <td>Rp <?= number_format($item['harga_modal'], 0, ',', '.') ?>,-</td>
+                  <td>Rp <?= number_format($item['harga_jual'], 0, ',', '.') ?>,-</td>
+                  <?= barcode_table_cell($item['id_obat']) ?>
                   <td>
                       <div class="btn-group">
-                          <a href="<?= base_url('obat/edit/' . $obat['id_obat']) ?>" class="btn btn-warning btn-sm">
+                          <a href="<?= base_url('obat/edit/' . $item['id_obat']) ?>" class="btn btn-warning btn-sm">
                               <i class="fas fa-edit"></i> Ubah
                           </a>
-                          <a href="<?= base_url('obat/hapus/' . $obat['id_obat']) ?>" class="btn btn-danger btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus obat ini?');">
+                          <a href="<?= base_url('obat/hapus/' . $item['id_obat']) ?>" class="btn btn-danger btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus obat ini?');">
                               <i class="fas fa-trash"></i> Hapus
                           </a>
                       </div>
@@ -70,6 +72,9 @@
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
+<!-- Include JsBarcode CDN menggunakan helper -->
+<?= $jsbarcode_cdn ?>
+
 <script>
   $(document).ready(function() {
     $('#tabelObat').DataTable({
@@ -91,25 +96,10 @@
     });
   });
 </script>
+
+<!-- Generate barcode script menggunakan helper -->
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        <?php if(isset($this->data['obat'])) : foreach ($this->data['obat'] as $obat) : ?>
-        try {
-            new JsBarcode("#barcode-<?= $obat['id_obat'] ?>", "<?= $obat['id_obat'] ?>-<?= $obat['nama_obat'] ?>" , {
-                format: 'CODE128',
-                height: 40,
-                width: 1.5,
-                lineColor: '#000000',
-                displayValue: false,
-                margin: 0
-            });
-        } catch(e) {
-            console.error("Exception with Barcode generation for ID: <?= $obat['id_obat'] ?>", e);
-            document.getElementById("barcode-<?= $obat['id_obat'] ?>").innerHTML =
-                '<span class="text-danger">Error: Barcode tidak dapat dibuat</span>';
-        }
-        <?php endforeach; endif; ?>
-    });
+<?= $barcode_script ?>
 </script>
 
 <?= $this->endSection() ?>

@@ -23,10 +23,19 @@ class Obat extends BaseController
 
     public function index()
     {
+        // Load barcode helper
+        helper('barcode');
+        
+        $obatData = $this->obatModel->findAll();
+        
         $data = [
             'title' => 'Data Stok Obat',
-            'obat' => $this->obatModel->findAll()
+            'obat' => $obatData,
+            // Generate barcode script menggunakan helper
+            'barcode_script' => generate_barcode_script($obatData),
+            'jsbarcode_cdn' => include_jsbarcode_cdn()
         ];
+        
         return view('obat/index', $data);
     }
 
