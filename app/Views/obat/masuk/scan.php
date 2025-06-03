@@ -55,6 +55,10 @@
             <input type="number" class="form-control" id="jumlah" name="jumlah" required>
           </div>
           <div class="form-group">
+                <label for="tanggal_masuk">Tanggal Masuk</label>
+                <input type="date" class="form-control" id="tanggal_masuk" name="tanggal_masuk" value="<?= old('tanggal_masuk') ? old('tanggal_masuk') : date('Y-m-d') ?>" required>
+              </div>
+          <div class="form-group">
             <label for="tanggal_kadaluwarsa">Tanggal Kadaluwarsa</label>
             <input type="date" class="form-control" id="tanggal_kadaluwarsa" name="tanggal_kadaluwarsa" required>
           </div>
