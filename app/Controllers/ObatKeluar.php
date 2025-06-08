@@ -107,18 +107,25 @@ public function simpan()
     $jumlah = (int)$this->request->getVar('jumlah');
     $tanggal_penjualan = $this->request->getVar('tanggal_penjualan') ?: date('Y-m-d');
     $harga_jual = (int)$this->request->getVar('harga_jual') ?: 0;
-    $total_harga = (int)$this->request->getVar('total_harga') ?: 0;
+    
+    // Debug: Log data yang diterima
+    log_message('debug', 'Data simpan obat keluar: ' . json_encode([
+        'id_obat' => $id_obat,
+        'jumlah' => $jumlah,
+        'tanggal_penjualan' => $tanggal_penjualan,
+        'harga_jual' => $harga_jual
+    ]));
     
     // Validasi input
     $rules = [
         'id_obat' => 'required',
         'jumlah' => 'required|numeric|greater_than[0]',
-        'tanggal_penjualan' => 'required|valid_date',
-        'harga_jual' => 'required|numeric|greater_than[0]',
-        'total_harga' => 'required|numeric|greater_than[0]'
+        'tanggal_penjualan' => 'required|valid_date'
     ];
     
     if (!$this->validate($rules)) {
+        $this->db->transRollback();
+        log_message('error', 'Validasi gagal: ' . json_encode($this->validator->getErrors()));
         return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
     }
     
@@ -126,19 +133,20 @@ public function simpan()
     
     if (!$obat) {
         $this->db->transRollback();
-        return redirect()->to('obat/keluar')->with('error', 'Data obat tidak ditemukan');
+        log_message('error', 'Data obat tidak ditemukan untuk ID: ' . $id_obat);
+        return redirect()->to('obat/keluar/scan')->with('error', 'Data obat tidak ditemukan');
     }
 
     if ($obat['jumlah_stok'] < $jumlah) {
         $this->db->transRollback();
-        return redirect()->to('obat/keluar/tambah')->with('error', 'Jumlah stok tidak mencukupi. Stok saat ini: ' . $obat['jumlah_stok']);
+        log_message('error', 'Stok tidak mencukupi. Stok: ' . $obat['jumlah_stok'] . ', Diminta: ' . $jumlah);
+        return redirect()->to('obat/keluar/scan')->with('error', 'Jumlah stok tidak mencukupi. Stok saat ini: ' . $obat['jumlah_stok']);
     }
 
-    // Verifikasi perhitungan total harga
-    $calculated_total = $harga_jual * $jumlah;
-    if ($total_harga != $calculated_total) {
-        $this->db->transRollback();
-        return redirect()->back()->withInput()->with('error', 'Total harga tidak sesuai dengan perhitungan');
+    // Jika harga_jual tidak dikirim dari form, ambil dari database
+    if ($harga_jual <= 0) {
+        $harga_jual = (int)$obat['harga_jual'];
+        log_message('debug', 'Menggunakan harga_jual dari database: ' . $harga_jual);
     }
 
     // Cek apakah sudah ada entry dengan id_obat dan tanggal_penjualan yang sama
@@ -150,25 +158,36 @@ public function simpan()
     if ($existingEntry) {
         // Jika sudah ada, update jumlahnya (tambahkan ke jumlah yang sudah ada)
         $jumlahBaru = $existingEntry['jumlah'] + $jumlah;
-        $totalHargaBaru = $existingEntry['total_harga'] + $total_harga;
 
         $dataUpdate = [
-            'jumlah' => $jumlahBaru,
-            'total_harga' => $totalHargaBaru
+            'jumlah' => $jumlahBaru
         ];
 
         // Update menggunakan primary key
         $primaryKeyField = $this->obatKeluarModel->primaryKey;
-        $this->obatKeluarModel->update($existingEntry[$primaryKeyField], $dataUpdate);
+        $updateResult = $this->obatKeluarModel->update($existingEntry[$primaryKeyField], $dataUpdate);
+        
+        if (!$updateResult) {
+            $this->db->transRollback();
+            log_message('error', 'Gagal update data obat keluar existing');
+            return redirect()->to('obat/keluar/scan')->with('error', 'Gagal mengupdate data obat keluar');
+        }
 
         // Update stok obat (hanya kurangi jumlah baru yang diinput)
         $stokBaru = $obat['jumlah_stok'] - $jumlah;
 
-        $this->stokObatModel->update($id_obat, [
+        $stokUpdateResult = $this->stokObatModel->update($id_obat, [
             'jumlah_stok' => $stokBaru
         ]);
+        
+        if (!$stokUpdateResult) {
+            $this->db->transRollback();
+            log_message('error', 'Gagal update stok obat');
+            return redirect()->to('obat/keluar/scan')->with('error', 'Gagal mengupdate stok obat');
+        }
 
         $message = 'Data obat keluar berhasil diupdate';
+        log_message('info', 'Update data obat keluar berhasil untuk ID: ' . $id_obat);
     } else {
         // Jika belum ada, buat entry baru
         $dataObatKeluar = [
@@ -177,32 +196,44 @@ public function simpan()
             'jumlah' => $jumlah,
             'satuan' => $obat['satuan'],
             'tanggal_penjualan' => $tanggal_penjualan,
-            'tanggal_kadaluwarsa' => $obat['tanggal_kadaluwarsa'],
-            'harga_jual' => $harga_jual,
-            'total_harga' => $total_harga
+            'tanggal_kadaluwarsa' => $obat['tanggal_kadaluwarsa']
         ];
         
-        $this->obatKeluarModel->insert($dataObatKeluar);
+        $insertResult = $this->obatKeluarModel->insert($dataObatKeluar);
+        
+        if (!$insertResult) {
+            $this->db->transRollback();
+            log_message('error', 'Gagal insert data obat keluar baru');
+            return redirect()->to('obat/keluar/scan')->with('error', 'Gagal menyimpan data obat keluar');
+        }
 
         // Update stok obat
         $stokBaru = $obat['jumlah_stok'] - $jumlah;
         
-        $this->stokObatModel->update($id_obat, [
+        $stokUpdateResult = $this->stokObatModel->update($id_obat, [
             'jumlah_stok' => $stokBaru
         ]);
+        
+        if (!$stokUpdateResult) {
+            $this->db->transRollback();
+            log_message('error', 'Gagal update stok obat setelah insert');
+            return redirect()->to('obat/keluar/scan')->with('error', 'Gagal mengupdate stok obat');
+        }
 
         $message = 'Data obat keluar berhasil disimpan';
+        log_message('info', 'Insert data obat keluar berhasil untuk ID: ' . $id_obat);
     }
     
     $this->db->transComplete();
     
     if ($this->db->transStatus() === false) {
-        return redirect()->to('obat/keluar')->with('error', 'Gagal menyimpan data obat keluar');
+        log_message('error', 'Transaction rollback pada simpan obat keluar');
+        return redirect()->to('obat/keluar/scan')->with('error', 'Gagal menyimpan data obat keluar');
     }
     
+    log_message('info', 'Simpan obat keluar berhasil, redirect ke index');
     return redirect()->to('obat/keluar')->with('success', $message);
 }
-
     public function edit($kode)
     {
         $obatKeluar = $this->obatKeluarModel->find($kode);

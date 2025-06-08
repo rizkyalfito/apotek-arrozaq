@@ -512,26 +512,36 @@ public function exportExcelObatKeluar()
     }
     
     public function filterStokObat()
-    {
-        $cari = $this->request->getPost('cari');
-        
-        if (!empty($cari)) {
-            $stokObat = $this->stokObatModel
-                ->like('nama_obat', $cari)
-                ->orLike('id_obat', $cari)
-                ->findAll();
-        } else {
-            $stokObat = $this->stokObatModel->findAll();
-        }
-        
-        $data = [
-            'title' => 'Laporan Stok Obat',
-            'stokObat' => $stokObat,
-            'cari' => $cari
-        ];
-        
-        return view('laporan/stok_obat', $data);
+{
+    $tanggal_mulai = $this->request->getPost('tanggal_mulai');
+    $tanggal_akhir = $this->request->getPost('tanggal_akhir');
+    $cari = $this->request->getPost('cari');
+    
+    // Gunakan method dari model yang sudah ada
+    $stokObat = $this->stokObatModel->getStokObatWithTanggalMasuk($cari);
+    
+    // Filter berdasarkan tanggal jika ada (lakukan di PHP karena sudah join)
+    if (!empty($tanggal_mulai) && !empty($tanggal_akhir)) {
+        $stokObat = array_filter($stokObat, function($item) use ($tanggal_mulai, $tanggal_akhir) {
+            if (empty($item['tanggal_masuk'])) {
+                return false; // Exclude items without tanggal_masuk
+            }
+            
+            $tanggal_item = date('Y-m-d', strtotime($item['tanggal_masuk']));
+            return $tanggal_item >= $tanggal_mulai && $tanggal_item <= $tanggal_akhir;
+        });
     }
+    
+    $data = [
+        'title' => 'Laporan Stok Obat',
+        'stokObat' => $stokObat,
+        'tanggal_mulai' => $tanggal_mulai,
+        'tanggal_akhir' => $tanggal_akhir,
+        'cari' => $cari
+    ];
+    
+    return view('laporan/stok_obat', $data);
+}
     
     public function exportPdfStokObat()
 {

@@ -8,21 +8,27 @@
   <div class="card-body">
     <form action="<?= base_url('laporan/stok-obat/filter') ?>" method="post" class="mb-4">
       <div class="row">
-        <div class="col-md-8">
+        <div class="col-md-4">
           <div class="form-group">
-            <label for="cari">Cari Obat</label>
-            <input type="text" class="form-control" id="cari" name="cari" 
-                   placeholder="Cari berdasarkan nama obat atau ID obat"
-                   value="<?= isset($cari) ? $cari : '' ?>">
+            <label for="tanggal_mulai">Tanggal Mulai</label>
+            <input type="date" class="form-control" id="tanggal_mulai" name="tanggal_mulai" 
+                   value="<?= isset($tanggal_mulai) ? $tanggal_mulai : date('Y-m-01') ?>" required>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="tanggal_akhir">Tanggal Akhir</label>
+            <input type="date" class="form-control" id="tanggal_akhir" name="tanggal_akhir" 
+                   value="<?= isset($tanggal_akhir) ? $tanggal_akhir : date('Y-m-d') ?>" required>
           </div>
         </div>
         <div class="col-md-4">
           <div class="form-group" style="margin-top: 32px;">
-            <button type="submit" class="btn btn-primary">Cari</button>
-            <a href="<?= base_url('laporan/stok-obat/export-pdf') ?><?= isset($cari) ? '?cari='.$cari : '' ?>" class="btn btn-danger" target="_blank">
+            <button type="submit" class="btn btn-primary">Filter</button>
+            <a href="<?= base_url('laporan/stok-obat/export-pdf') ?>" class="btn btn-danger" target="_blank">
               <i class="fas fa-file-pdf"></i> Export PDF
             </a>
-            <a href="<?= base_url('laporan/stok-obat/export-excel') ?><?= isset($cari) ? '?cari='.$cari : '' ?>" class="btn btn-success">
+            <a href="<?= base_url('laporan/stok-obat/export-excel') ?>" class="btn btn-success">
               <i class="fas fa-file-excel"></i> Export Excel
             </a>
           </div>

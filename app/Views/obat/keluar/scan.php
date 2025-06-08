@@ -33,6 +33,8 @@
       <div class="card-body">
         <form action="<?= base_url('obat/keluar/simpan') ?>" method="post">
           <input type="hidden" name="id_obat" id="id_obat">
+          <!-- PERBAIKAN: Tambah hidden input untuk harga_jual -->
+          <input type="hidden" name="harga_jual" id="harga_jual_value">
           
           <div class="form-group">
             <label for="nama_obat">Nama Obat</label>
@@ -66,8 +68,7 @@
           
           <div class="form-group">
             <label for="total_harga">Total Harga</label>
-            <input type="text" class="form-control" name="total_harga_display" id="total_harga_display" value="Rp 0" readonly>
-            <input type="hidden" name="total_harga" id="total_harga_value" value="0">
+            <input type="text" class="form-control" id="total_harga_display" value="Rp 0" readonly>
           </div>
           
           <div class="form-group">
@@ -135,7 +136,6 @@ $(document).ready(function() {
     });
     
     $('#total_harga_display').val(formatter.format(totalHarga));
-    $('#total_harga_value').val(totalHarga);
   }
 
   // Event listener untuk input jumlah
@@ -366,9 +366,11 @@ $(document).ready(function() {
       });
       $('#harga_jual').val(formatter.format(currentHargaJual));
       
+      // PERBAIKAN: Set nilai harga_jual ke hidden input
+      $('#harga_jual_value').val(currentHargaJual);
+      
       // Reset total harga
       $('#total_harga_display').val('Rp 0');
-      $('#total_harga_value').val('0');
       
       // Enable submit button
       $('#submitBtn').prop('disabled', false);
