@@ -37,6 +37,7 @@
           <th>Nama Obat</th>
           <th>Jumlah Stok</th>
           <th>Satuan</th>
+          <th>Tanggal Masuk</th>
           <th>Tanggal Kadaluwarsa</th>
         </tr>
       </thead>
@@ -48,12 +49,13 @@
               <td><?= $row['nama_obat'] ?></td>
               <td><?= $row['jumlah_stok'] ?></td>
               <td><?= $row['satuan'] ?></td>
+              <td><?= $row['tanggal_masuk'] ? date('d-m-Y', strtotime($row['tanggal_masuk'])) : '-' ?></td>
               <td><?= date('d-m-Y', strtotime($row['tanggal_kadaluwarsa'])) ?></td>
             </tr>
           <?php endforeach; ?>
         <?php else: ?>
           <tr>
-            <td colspan="5" class="text-center">Belum ada data</td>
+            <td colspan="6" class="text-center">Belum ada data</td>
           </tr>
         <?php endif; ?>
       </tbody>

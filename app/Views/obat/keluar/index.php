@@ -35,6 +35,9 @@
           <th>Nama Obat</th>
           <th>Jumlah</th>
           <th>Satuan</th>
+          <th>Harga Modal</th>
+          <th>Harga Jual</th>
+          <th>Total Harga</th>
           <th>Tanggal Penjualan</th>
           <th>Aksi</th>
         </tr>
@@ -42,7 +45,7 @@
       <tbody>
         <?php if (empty($obatKeluar)): ?>
           <tr>
-            <td colspan="7" class="text-center">Belum ada data</td>
+            <td colspan="10" class="text-center">Belum ada data</td>
           </tr>
         <?php else: ?>
           <?php foreach ($obatKeluar as $data): ?>
@@ -52,6 +55,9 @@
             <td><?= $data['nama_obat'] ?></td>
             <td><?= $data['jumlah'] ?></td>
             <td><?= $data['satuan'] ?></td>
+            <td>Rp <?= number_format($data['harga_modal'] ?? 0, 0, ',', '.') ?></td>
+            <td>Rp <?= number_format($data['harga_jual'] ?? 0, 0, ',', '.') ?></td>
+            <td>Rp <?= number_format(($data['harga_jual'] ?? 0) * $data['jumlah'], 0, ',', '.') ?></td>
             <td><?= date('d/m/Y', strtotime($data['tanggal_penjualan'])) ?></td>
             <td>
               <a href="<?= base_url('obat/keluar/edit/' . $data['kode_transaksi']) ?>" class="btn btn-warning btn-sm">

@@ -18,16 +18,7 @@
         <div class="text-center mb-3">
           <div id="qr-reader" style="width: 100%"></div>
         </div>
-        <!-- <div class="text-center">
-          <button class="btn btn-primary" id="startButton">Mulai Scan</button>
-          <button class="btn btn-danger" id="stopButton" style="display: none;">Berhenti Scan</button>
-        </div> -->
-        <!-- <div class="mt-3">
-          <div class="form-group">
-            <label for="qrCodeImage">Atau unggah gambar Barcode</label>
-            <input type="file" class="form-control-file" id="qrCodeImage" accept="image/*">
-          </div>
-        </div> -->
+        
         <div class="mt-3">
           <div id="debug-info" class="alert alert-info" style="display: none;"></div>
         </div>
@@ -57,15 +48,26 @@
             <label for="satuan">Satuan</label>
             <input type="text" class="form-control" id="satuan" readonly>
           </div>
+
+          <div class="form-group">
+            <label for="harga_jual">Harga Jual</label>
+            <input type="text" class="form-control" id="harga_jual" readonly>
+          </div>
           
           <div class="form-group">
             <label for="jumlah">Jumlah</label>
-            <input type="number" class="form-control" name="jumlah" id="jumlah" required>
+            <input type="number" class="form-control" name="jumlah" id="jumlah" min="1" required>
           </div>
           
           <div class="form-group">
             <label for="tanggal_penjualan">Tanggal Penjualan</label>
-            <input type="date" class="form-control" name="tanggal_penjualan" id="tanggal_penjualan" value="<?= date('Y-m-d') ?>" required>
+            <input type="date" class="form-control" name="tanggal_penjualan" id="tanggal_penjualan" value="<?= date('Y-m-d') ?>" readonly>
+          </div>
+          
+          <div class="form-group">
+            <label for="total_harga">Total Harga</label>
+            <input type="text" class="form-control" name="total_harga_display" id="total_harga_display" value="Rp 0" readonly>
+            <input type="hidden" name="total_harga" id="total_harga_value" value="0">
           </div>
           
           <div class="form-group">
@@ -109,6 +111,9 @@ $(document).ready(function() {
   const barcodeInput = document.getElementById('barcodeInput');
   const debugInfo = document.getElementById('debug-info');
   
+  // Variabel untuk menyimpan harga jual obat
+  let currentHargaJual = 0;
+  
   // Set focus to barcode input when page loads
   barcodeInput.focus();
   
@@ -116,6 +121,35 @@ $(document).ready(function() {
   let barcodeTimer = null;
   // Waktu tunggu dalam milidetik sebelum proses input barcode
   const BARCODE_DELAY = 500;
+
+  // Function untuk menghitung total harga
+  function hitungTotalHarga() {
+    const jumlah = parseInt($('#jumlah').val()) || 0;
+    const totalHarga = currentHargaJual * jumlah;
+    
+    // Format ke Rupiah
+    const formatter = new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0
+    });
+    
+    $('#total_harga_display').val(formatter.format(totalHarga));
+    $('#total_harga_value').val(totalHarga);
+  }
+
+  // Event listener untuk input jumlah
+  $('#jumlah').on('input keyup', function() {
+    const jumlah = parseInt($(this).val()) || 0;
+    const stok = parseInt($('#stok_tersedia').val()) || 0;
+    
+    if (jumlah > stok) {
+      alert('Jumlah yang dimasukkan melebihi stok tersedia!');
+      $(this).val(stok);
+    }
+    
+    hitungTotalHarga();
+  });
 
   // Handle barcode input dengan debounce untuk menunggu input lengkap
   barcodeInput.addEventListener('input', function() {
@@ -167,55 +201,61 @@ $(document).ready(function() {
     }
   }
 
-  startButton.addEventListener('click', () => {
-    html5QrCode.start(
-      { facingMode: "environment" },
-      { fps: 10, qrbox: { width: 250, height: 250 } },
-      onScanSuccess,
-      onScanFailure)
-      .then(() => {
-        startButton.style.display = 'none';
-        stopButton.style.display = 'inline-block';
-        showDebug("Scanner started");
-      })
-      .catch(err => {
-        showDebug("Error starting scanner: " + err, true);
-      });
-  });
+  if (startButton) {
+    startButton.addEventListener('click', () => {
+      html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        onScanSuccess,
+        onScanFailure)
+        .then(() => {
+          startButton.style.display = 'none';
+          stopButton.style.display = 'inline-block';
+          showDebug("Scanner started");
+        })
+        .catch(err => {
+          showDebug("Error starting scanner: " + err, true);
+        });
+    });
+  }
   
-  stopButton.addEventListener('click', () => {
-    html5QrCode.stop()
-      .then(() => {
-        startButton.style.display = 'inline-block';
-        stopButton.style.display = 'none';
-        showDebug("Scanner stopped");
-      })
-      .catch(err => {
-        showDebug("Error stopping scanner: " + err, true);
-      });
-  });
+  if (stopButton) {
+    stopButton.addEventListener('click', () => {
+      html5QrCode.stop()
+        .then(() => {
+          startButton.style.display = 'inline-block';
+          stopButton.style.display = 'none';
+          showDebug("Scanner stopped");
+        })
+        .catch(err => {
+          showDebug("Error stopping scanner: " + err, true);
+        });
+    });
+  }
   
-  fileInput.addEventListener('change', event => {
-    if (event.target.files.length === 0) {
-      return;
-    }
-    
-    const imageFile = event.target.files[0];
-    showDebug(`Processing image file: ${imageFile.name}`);
-    
-    if (html5QrCode.isScanning) {
-      html5QrCode.stop().then(() => {
-        startButton.style.display = 'inline-block';
-        stopButton.style.display = 'none';
+  if (fileInput) {
+    fileInput.addEventListener('change', event => {
+      if (event.target.files.length === 0) {
+        return;
+      }
+      
+      const imageFile = event.target.files[0];
+      showDebug(`Processing image file: ${imageFile.name}`);
+      
+      if (html5QrCode.isScanning) {
+        html5QrCode.stop().then(() => {
+          startButton.style.display = 'inline-block';
+          stopButton.style.display = 'none';
+          processQrCodeFromImage(imageFile);
+        }).catch(err => {
+          showDebug("Error stopping scanner: " + err, true);
+          processQrCodeFromImage(imageFile);
+        });
+      } else {
         processQrCodeFromImage(imageFile);
-      }).catch(err => {
-        showDebug("Error stopping scanner: " + err, true);
-        processQrCodeFromImage(imageFile);
-      });
-    } else {
-      processQrCodeFromImage(imageFile);
-    }
-  });
+      }
+    });
+  }
   
   function processQrCodeFromImage(imageFile) {
     html5QrCode.scanFile(imageFile, true)
@@ -311,25 +351,34 @@ $(document).ready(function() {
       const obat = response.obat;
       showDebug(`Data obat ditemukan: ${obat.nama_obat} (ID: ${obat.id_obat})`);
       
+      // Set nilai ke form
       $('#id_obat').val(obat.id_obat);
       $('#nama_obat').val(obat.nama_obat);
       $('#stok_tersedia').val(obat.jumlah_stok);
       $('#satuan').val(obat.satuan);
+      
+      // Format harga jual dan simpan nilai untuk perhitungan
+      currentHargaJual = parseInt(obat.harga_jual) || 0;
+      const formatter = new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0
+      });
+      $('#harga_jual').val(formatter.format(currentHargaJual));
+      
+      // Reset total harga
+      $('#total_harga_display').val('Rp 0');
+      $('#total_harga_value').val('0');
+      
+      // Enable submit button
       $('#submitBtn').prop('disabled', false);
       
+      // Set max untuk input jumlah
       $('#jumlah').attr('max', obat.jumlah_stok);
-      $('#jumlah').off('input').on('input', function() {
-        const jumlah = parseInt($(this).val()) || 0;
-        const stok = parseInt(obat.jumlah_stok) || 0;
-        
-        if (jumlah > stok) {
-          alert('Jumlah yang dimasukkan melebihi stok tersedia!');
-          $(this).val(stok);
-        }
-      });
       
-      // Focus on jumlah field after successful scan
-      $('#jumlah').focus();
+      // Reset dan focus on jumlah field after successful scan
+      $('#jumlah').val('').focus();
+      
     } else {
       showDebug(`Data obat tidak ditemukan: ${response.message || 'Unknown error'}`, true);
       alert('Data obat tidak ditemukan!');

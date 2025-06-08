@@ -14,7 +14,6 @@ class DataStokObatModel extends Model
     protected $protectFields    = false;
     protected $allowedFields    = [];
 
-    // Dates
     protected $useTimestamps = true;
     protected $dateFormat    = 'datetime';
     protected $createdField  = 'created_at';
@@ -24,9 +23,89 @@ class DataStokObatModel extends Model
     {
         $stockObatModel = $this->db->table('data_stok_obat');
 
-        $result = $stockObatModel->where('jumlah_stok <', 10)->get()->getResultArray();
+        $result = $stockObatModel->where('jumlah_stok <', 5)->get()->getResultArray();
 
         return $result;
+    }
 
+    public function notificationExpiringMedicine()
+    {
+        $builder = $this->db->table('data_stok_obat');
+        
+        $today = date('Y-m-d');
+        
+        $sevenDaysFromNow = date('Y-m-d', strtotime('+7 days'));
+        
+        $builder->select('id_obat, nama_obat, jumlah_stok, satuan, tanggal_kadaluwarsa');
+        $builder->where('tanggal_kadaluwarsa >=', $today);
+        $builder->where('tanggal_kadaluwarsa <=', $sevenDaysFromNow);
+        $builder->orderBy('tanggal_kadaluwarsa', 'ASC');
+        
+        $result = $builder->get()->getResultArray();
+        
+        foreach ($result as &$obat) {
+            $tanggalKadaluarsa = new \DateTime($obat['tanggal_kadaluwarsa']);
+            $tanggalSekarang = new \DateTime($today);
+            $selisihHari = $tanggalSekarang->diff($tanggalKadaluarsa)->days;
+            
+            $obat['hari_tersisa'] = $selisihHari;
+            
+            if ($selisihHari == 0) {
+                $obat['status_kadaluarsa'] = 'Kadaluarsa Hari Ini';
+                $obat['level_urgency'] = 'critical';
+            } elseif ($selisihHari <= 2) {
+                $obat['status_kadaluarsa'] = 'Sangat Mendesak';
+                $obat['level_urgency'] = 'high';
+            } elseif ($selisihHari <= 7) {
+                $obat['status_kadaluarsa'] = 'Perlu Perhatian';
+                $obat['level_urgency'] = 'medium';
+            }
+        }
+        
+        return $result;
+    }
+
+    public function getAllNotifications()
+    {
+        $notifications = [
+            'minimum_stock' => $this->notificationMinimumStock(),
+            'expiring_medicine' => $this->notificationExpiringMedicine()
+        ];
+        
+        $notifications['total_count'] = count($notifications['minimum_stock']) + count($notifications['expiring_medicine']);
+        
+        return $notifications;
+    }
+
+    public function getExpiredMedicine()
+    {
+        $builder = $this->db->table('data_stok_obat');
+        
+        $today = date('Y-m-d');
+        
+        $builder->select('id_obat, nama_obat, jumlah_stok, satuan, tanggal_kadaluwarsa');
+        $builder->where('tanggal_kadaluwarsa <', $today);
+        $builder->orderBy('tanggal_kadaluwarsa', 'ASC');
+        
+        return $builder->get()->getResultArray();
+    }
+
+    public function getStokObatWithTanggalMasuk($cari = null)
+    {
+        $builder = $this->db->table('data_stok_obat dso');
+        $builder->select('dso.id_obat, dso.nama_obat, dso.jumlah_stok, dso.satuan, dso.tanggal_kadaluwarsa, om.tanggal_masuk');
+        $builder->join('obat_masuk om', 'dso.id_obat = om.id_obat', 'left');
+        
+        if (!empty($cari)) {
+            $builder->groupStart();
+            $builder->like('dso.nama_obat', $cari);
+            $builder->orLike('dso.id_obat', $cari);
+            $builder->groupEnd();
+        }
+        
+        $builder->groupBy('dso.id_obat');
+        $builder->orderBy('dso.id_obat', 'ASC');
+        
+        return $builder->get()->getResultArray();
     }
 }

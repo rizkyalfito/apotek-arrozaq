@@ -23,9 +23,14 @@ class ObatKeluar extends BaseController
 
     public function index()
     {
+        $obatKeluarData = $this->obatKeluarModel
+            ->select('obat_keluar.*, data_stok_obat.harga_modal, data_stok_obat.harga_jual')
+            ->join('data_stok_obat', 'data_stok_obat.id_obat = obat_keluar.id_obat', 'left')
+            ->findAll();
+        
         $data = [
             'title' => 'Obat Keluar',
-            'obatKeluar' => $this->obatKeluarModel->findAll()
+            'obatKeluar' => $obatKeluarData
         ];
         
         return view('obat/keluar/index', $data);
@@ -85,22 +90,37 @@ class ObatKeluar extends BaseController
     }
 
     public function tambah()
-    {
-        $data = [
-            'title' => 'Tambah Obat Keluar',
-            'obat' => $this->stokObatModel->findAll()
-        ];
-        
-        return view('obat/keluar/tambah', $data);
-    }
+{
+    $data = [
+        'title' => 'Tambah Obat Keluar',
+        'obat' => $this->stokObatModel->findAll()
+    ];
+    
+    return view('obat/keluar/tambah', $data);
+}
 
-    public function simpan()
+public function simpan()
 {
     $this->db->transStart();
     
     $id_obat = $this->request->getVar('id_obat');
     $jumlah = (int)$this->request->getVar('jumlah');
     $tanggal_penjualan = $this->request->getVar('tanggal_penjualan') ?: date('Y-m-d');
+    $harga_jual = (int)$this->request->getVar('harga_jual') ?: 0;
+    $total_harga = (int)$this->request->getVar('total_harga') ?: 0;
+    
+    // Validasi input
+    $rules = [
+        'id_obat' => 'required',
+        'jumlah' => 'required|numeric|greater_than[0]',
+        'tanggal_penjualan' => 'required|valid_date',
+        'harga_jual' => 'required|numeric|greater_than[0]',
+        'total_harga' => 'required|numeric|greater_than[0]'
+    ];
+    
+    if (!$this->validate($rules)) {
+        return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+    }
     
     $obat = $this->stokObatModel->find($id_obat);
     
@@ -114,6 +134,13 @@ class ObatKeluar extends BaseController
         return redirect()->to('obat/keluar/tambah')->with('error', 'Jumlah stok tidak mencukupi. Stok saat ini: ' . $obat['jumlah_stok']);
     }
 
+    // Verifikasi perhitungan total harga
+    $calculated_total = $harga_jual * $jumlah;
+    if ($total_harga != $calculated_total) {
+        $this->db->transRollback();
+        return redirect()->back()->withInput()->with('error', 'Total harga tidak sesuai dengan perhitungan');
+    }
+
     // Cek apakah sudah ada entry dengan id_obat dan tanggal_penjualan yang sama
     $existingEntry = $this->obatKeluarModel
         ->where('id_obat', $id_obat)
@@ -123,13 +150,15 @@ class ObatKeluar extends BaseController
     if ($existingEntry) {
         // Jika sudah ada, update jumlahnya (tambahkan ke jumlah yang sudah ada)
         $jumlahBaru = $existingEntry['jumlah'] + $jumlah;
+        $totalHargaBaru = $existingEntry['total_harga'] + $total_harga;
 
         $dataUpdate = [
-            'jumlah' => $jumlahBaru
+            'jumlah' => $jumlahBaru,
+            'total_harga' => $totalHargaBaru
         ];
 
-        // Update menggunakan primary key - sesuaikan dengan nama field primary key di tabel Anda
-        $primaryKeyField = $this->obatKeluarModel->primaryKey; // Ambil nama primary key dari model
+        // Update menggunakan primary key
+        $primaryKeyField = $this->obatKeluarModel->primaryKey;
         $this->obatKeluarModel->update($existingEntry[$primaryKeyField], $dataUpdate);
 
         // Update stok obat (hanya kurangi jumlah baru yang diinput)
@@ -148,7 +177,9 @@ class ObatKeluar extends BaseController
             'jumlah' => $jumlah,
             'satuan' => $obat['satuan'],
             'tanggal_penjualan' => $tanggal_penjualan,
-            'tanggal_kadaluwarsa' => $obat['tanggal_kadaluwarsa']
+            'tanggal_kadaluwarsa' => $obat['tanggal_kadaluwarsa'],
+            'harga_jual' => $harga_jual,
+            'total_harga' => $total_harga
         ];
         
         $this->obatKeluarModel->insert($dataObatKeluar);

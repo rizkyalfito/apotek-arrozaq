@@ -36,38 +36,59 @@
       </div>
     </form>
     
-    <table id="tabelLaporanObatKeluar" class="table table-bordered table-striped">
-      <thead>
-        <tr>
-          <th>Kode Transaksi</th>
-          <th>ID Obat</th>
-          <th>Nama Obat</th>
-          <th>Jumlah</th>
-          <th>Satuan</th>
-          <th>Tanggal Penjualan</th>
-          <th>Tanggal Kadaluwarsa</th>
-        </tr>
-      </thead>
-      <tbody>
-        <?php if (isset($obatKeluar) && count($obatKeluar) > 0): ?>
-          <?php foreach ($obatKeluar as $row): ?>
-            <tr>
-              <td><?= $row['kode_transaksi'] ?></td>
-              <td><?= $row['id_obat'] ?></td>
-              <td><?= $row['nama_obat'] ?></td>
-              <td><?= $row['jumlah'] ?></td>
-              <td><?= $row['satuan'] ?></td>
-              <td><?= date('d-m-Y', strtotime($row['tanggal_penjualan'])) ?></td>
-              <td><?= date('d-m-Y', strtotime($row['tanggal_kadaluwarsa'])) ?></td>
-            </tr>
-          <?php endforeach; ?>
-        <?php else: ?>
+    <div class="table-responsive">
+      <table id="tabelLaporanObatKeluar" class="table table-bordered table-striped">
+        <thead>
           <tr>
-            <td colspan="7" class="text-center">Belum ada data</td>
+            <th>Kode Transaksi</th>
+            <th>ID Obat</th>
+            <th>Nama Obat</th>
+            <th>Jumlah</th>
+            <th>Satuan</th>
+            <th>Tanggal Penjualan</th>
+            <th>Harga Jual</th>
+            <th>Harga Total</th>
+            <th>Tanggal Kadaluwarsa</th>
           </tr>
+        </thead>
+        <tbody>
+          <?php if (isset($obatKeluar) && count($obatKeluar) > 0): ?>
+            <?php 
+            $totalKeseluruhan = 0;
+            foreach ($obatKeluar as $row): 
+              $hargaJual = $row['harga_jual'] ?? 0;
+              $hargaTotal = $hargaJual * $row['jumlah'];
+              $totalKeseluruhan += $hargaTotal;
+            ?>
+              <tr>
+                <td><?= $row['kode_transaksi'] ?></td>
+                <td><?= $row['id_obat'] ?></td>
+                <td><?= $row['nama_obat'] ?></td>
+                <td><?= $row['jumlah'] ?></td>
+                <td><?= $row['satuan'] ?></td>
+                <td><?= date('d-m-Y', strtotime($row['tanggal_penjualan'])) ?></td>
+                <td>Rp <?= number_format($hargaJual, 0, ',', '.') ?></td>
+                <td>Rp <?= number_format($hargaTotal, 0, ',', '.') ?></td>
+                <td><?= date('d-m-Y', strtotime($row['tanggal_kadaluwarsa'])) ?></td>
+              </tr>
+            <?php endforeach; ?>
+          <?php else: ?>
+            <tr>
+              <td colspan="9" class="text-center">Belum ada data</td>
+            </tr>
+          <?php endif; ?>
+        </tbody>
+        <?php if (isset($obatKeluar) && count($obatKeluar) > 0): ?>
+          <tfoot>
+            <tr class="table-info font-weight-bold">
+              <td colspan="7" class="text-right"><strong>TOTAL KESELURUHAN:</strong></td>
+              <td><strong>Rp <?= number_format($totalKeseluruhan, 0, ',', '.') ?></strong></td>
+              <td></td>
+            </tr>
+          </tfoot>
         <?php endif; ?>
-      </tbody>
-    </table>
+      </table>
+    </div>
   </div>
 </div>
 <?= $this->endSection() ?>
@@ -79,6 +100,7 @@
       "responsive": true,
       "lengthChange": true,
       "autoWidth": false,
+      "scrollX": true,
       "language": {
         "search": "Cari:",
         "lengthMenu": "Tampilkan _MENU_ data per halaman",

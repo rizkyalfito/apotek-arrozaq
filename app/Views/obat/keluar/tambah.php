@@ -34,7 +34,11 @@
                 <select class="form-control <?= (session('errors.id_obat')) ? 'is-invalid' : '' ?>" id="id_obat" name="id_obat" required>
                   <option value="">-- Pilih Obat --</option>
                   <?php foreach ($obat as $item) : ?>
-                    <option value="<?= $item['id_obat'] ?>" data-nama="<?= $item['nama_obat'] ?>" data-satuan="<?= $item['satuan'] ?>" data-stok="<?= $item['jumlah_stok'] ?>">
+                    <option value="<?= $item['id_obat'] ?>" 
+                            data-nama="<?= $item['nama_obat'] ?>" 
+                            data-satuan="<?= $item['satuan'] ?>" 
+                            data-stok="<?= $item['jumlah_stok'] ?>"
+                            data-harga="<?= isset($item['harga_jual']) ? $item['harga_jual'] : '0' ?>">
                       <?= $item['id_obat'] ?> - <?= $item['nama_obat'] ?> (Stok: <?= $item['jumlah_stok'] ?>)
                     </option>
                   <?php endforeach; ?>
@@ -69,6 +73,16 @@
                 <label for="tanggal_penjualan">Tanggal Keluar</label>
                 <input type="date" class="form-control" id="tanggal_penjualan" name="tanggal_penjualan" value="<?= old('tanggal_penjualan') ? old('tanggal_penjualan') : date('Y-m-d') ?>" required>
               </div>
+              <div class="form-group">
+                <label for="harga_jual">Harga Jual</label>
+                <input type="text" class="form-control" id="harga_jual_display" readonly>
+                <input type="hidden" name="harga_jual" id="harga_jual_value" value="0">
+              </div>
+              <div class="form-group">
+                <label for="total_harga">Total Harga</label>
+                <input type="text" class="form-control" name="total_harga_display" id="total_harga_display" value="Rp 0" readonly>
+                <input type="hidden" name="total_harga" id="total_harga_value" value="0">
+              </div>
             </div>
           </div>
           <div class="row mt-3">
@@ -89,23 +103,39 @@
 <?= $this->section('scripts') ?>
 <script>
   $(document).ready(function() {
+    // Format currency function
+    function formatCurrency(amount) {
+      return 'Rp ' + amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
+    
+    // Parse currency function
+    function parseCurrency(formatted) {
+      return parseInt(formatted.replace(/[^0-9]/g, '')) || 0;
+    }
+    
     $('#id_obat').change(function() {
       var selectedOption = $(this).find('option:selected');
       var nama = selectedOption.data('nama');
       var satuan = selectedOption.data('satuan');
       var stok = selectedOption.data('stok');
+      var harga = selectedOption.data('harga') || 0;
       
       $('#nama_obat').val(nama);
       $('#satuan').val(satuan);
       $('#stok_tersedia').val(stok);
+      $('#harga_jual_display').val(formatCurrency(harga));
+      $('#harga_jual_value').val(harga);
       
       $('#jumlah').val('');
+      $('#total_harga_display').val('Rp 0');
+      $('#total_harga_value').val(0);
       $('#stok_warning').hide();
       validateJumlah();
     });
     
     $('#jumlah').on('input', function() {
       validateJumlah();
+      calculateTotal();
     });
     
     function validateJumlah() {
@@ -120,10 +150,25 @@
         $('#submitBtn').prop('disabled', false);
       }
     }
+    
+    function calculateTotal() {
+      var harga = parseInt($('#harga_jual_value').val()) || 0;
+      var jumlah = parseInt($('#jumlah').val()) || 0;
+      var total = harga * jumlah;
+      
+      $('#total_harga_display').val(formatCurrency(total));
+      $('#total_harga_value').val(total);
+    }
 
+    // Restore old values if form has errors
     if('<?= old('id_obat') ?>') {
       $('#id_obat').val('<?= old('id_obat') ?>');
       $('#id_obat').trigger('change');
+      
+      // Wait a bit for the change event to complete, then calculate total
+      setTimeout(function() {
+        calculateTotal();
+      }, 100);
     }
   });
 </script>
