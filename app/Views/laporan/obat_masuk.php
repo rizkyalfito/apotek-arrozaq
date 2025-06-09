@@ -27,10 +27,19 @@
             <div class="col-md-4">
               <div class="form-group" style="margin-top: 32px;">
                 <button type="submit" class="btn btn-primary">Filter</button>
-                <a href="<?= base_url('laporan/obat-masuk/export-pdf') ?>" class="btn btn-danger" target="_blank">
+                
+                <?php 
+                $tanggal_mulai_param = isset($tanggal_mulai) ? $tanggal_mulai : date('Y-m-01');
+                $tanggal_akhir_param = isset($tanggal_akhir) ? $tanggal_akhir : date('Y-m-d');
+                ?>
+                
+                <a href="<?= base_url('laporan/obat-masuk/export-pdf') ?>?tanggal_mulai=<?= $tanggal_mulai_param ?>&tanggal_akhir=<?= $tanggal_akhir_param ?>" 
+                  class="btn btn-danger" target="_blank">
                   <i class="fas fa-file-pdf"></i> Export PDF
                 </a>
-                <a href="<?= base_url('laporan/obat-masuk/export-excel') ?>" class="btn btn-success">
+                
+                <a href="<?= base_url('laporan/obat-masuk/export-excel') ?>?tanggal_mulai=<?= $tanggal_mulai_param ?>&tanggal_akhir=<?= $tanggal_akhir_param ?>" 
+                  class="btn btn-success">
                   <i class="fas fa-file-excel"></i> Export Excel
                 </a>
               </div>
