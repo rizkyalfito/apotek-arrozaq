@@ -229,36 +229,43 @@ class Laporan extends BaseController
 
     // ===== OBAT KELUAR =====
     public function obatKeluar()
-    {
-        // Default: Tampilkan semua data obat keluar
-        $data = [
-            'title' => 'Laporan Obat Keluar',
-            'obatKeluar' => $this->obatKeluarModel->findAll()
-        ];
-        
-        return view('laporan/obat_keluar', $data);
-    }
+{
+    // Tampilkan semua data obat keluar dengan join untuk mendapatkan harga
+    $obatKeluarData = $this->obatKeluarModel
+        ->select('obat_keluar.*, data_stok_obat.harga_modal, data_stok_obat.harga_jual')
+        ->join('data_stok_obat', 'data_stok_obat.id_obat = obat_keluar.id_obat', 'left')
+        ->findAll();
     
-    public function filterObatKeluar()
-    {
-        $tanggal_mulai = $this->request->getPost('tanggal_mulai');
-        $tanggal_akhir = $this->request->getPost('tanggal_akhir');
-        
-        // Query dengan filter tanggal
-        $obatKeluar = $this->obatKeluarModel
-            ->where('tanggal_penjualan >=', $tanggal_mulai)
-            ->where('tanggal_penjualan <=', $tanggal_akhir)
-            ->findAll();
-        
-        $data = [
-            'title' => 'Laporan Obat Keluar',
-            'obatKeluar' => $obatKeluar,
-            'tanggal_mulai' => $tanggal_mulai,
-            'tanggal_akhir' => $tanggal_akhir
-        ];
-        
-        return view('laporan/obat_keluar', $data);
-    }
+    $data = [
+        'title' => 'Laporan Obat Keluar',
+        'obatKeluar' => $obatKeluarData
+    ];
+    
+    return view('laporan/obat_keluar', $data);
+}
+
+public function filterObatKeluar()
+{
+    $tanggal_mulai = $this->request->getPost('tanggal_mulai');
+    $tanggal_akhir = $this->request->getPost('tanggal_akhir');
+    
+    // Query dengan filter tanggal dan join untuk mendapatkan harga
+    $obatKeluar = $this->obatKeluarModel
+        ->select('obat_keluar.*, data_stok_obat.harga_modal, data_stok_obat.harga_jual')
+        ->join('data_stok_obat', 'data_stok_obat.id_obat = obat_keluar.id_obat', 'left')
+        ->where('obat_keluar.tanggal_penjualan >=', $tanggal_mulai)
+        ->where('obat_keluar.tanggal_penjualan <=', $tanggal_akhir)
+        ->findAll();
+    
+    $data = [
+        'title' => 'Laporan Obat Keluar',
+        'obatKeluar' => $obatKeluar,
+        'tanggal_mulai' => $tanggal_mulai,
+        'tanggal_akhir' => $tanggal_akhir
+    ];
+    
+    return view('laporan/obat_keluar', $data);
+}
     
     public function exportPdfObatKeluar()
 {
@@ -543,7 +550,7 @@ public function exportExcelObatKeluar()
     return view('laporan/stok_obat', $data);
 }
     
-    public function exportPdfStokObat()
+public function exportPdfStokObat()
 {
     // Membuat objek TCPDF
     $pdf = new TCPDF('L', 'mm', 'A4', true, 'UTF-8', false);
@@ -572,9 +579,17 @@ public function exportExcelObatKeluar()
     // Title
     $pdf->Cell(0, 10, 'LAPORAN STOK OBAT', 0, 1, 'C');
     
-    // Tanggal cetak
+    // Ambil parameter filter dari GET request
+    $tanggal_mulai = $this->request->getGet('tanggal_mulai');
+    $tanggal_akhir = $this->request->getGet('tanggal_akhir');
+    $cari = $this->request->getGet('cari') ?? '';
+    
+    // Tampilkan periode jika ada filter tanggal
     $pdf->SetFont('helvetica', '', 11);
-    $pdf->Cell(0, 7, 'Tanggal: ' . date('d-m-Y'), 0, 1, 'C');
+    if (!empty($tanggal_mulai) && !empty($tanggal_akhir)) {
+        $pdf->Cell(0, 7, 'Periode: ' . date('d-m-Y', strtotime($tanggal_mulai)) . ' s/d ' . date('d-m-Y', strtotime($tanggal_akhir)), 0, 1, 'C');
+    }
+    $pdf->Cell(0, 7, 'Tanggal Cetak: ' . date('d-m-Y'), 0, 1, 'C');
     
     // Add a horizontal line separator
     $pdf->Ln(2);
@@ -615,9 +630,20 @@ public function exportExcelObatKeluar()
     $pdf->SetFont('helvetica', '', 10);
     $pdf->SetFillColor(245, 245, 245); // Very light gray for alternating rows
     
-    // Ambil data stok obat dengan tanggal masuk
-    $cari = $this->request->getGet('cari') ?? '';
+    // Ambil data stok obat dengan filter yang sama seperti di filterStokObat()
     $stokObat = $this->stokObatModel->getStokObatWithTanggalMasuk($cari);
+    
+    // Filter berdasarkan tanggal_masuk jika ada (sama seperti di filterStokObat)
+    if (!empty($tanggal_mulai) && !empty($tanggal_akhir)) {
+        $stokObat = array_filter($stokObat, function($item) use ($tanggal_mulai, $tanggal_akhir) {
+            if (empty($item['tanggal_masuk'])) {
+                return false; // Exclude items without tanggal_masuk
+            }
+            
+            $tanggal_item = date('Y-m-d', strtotime($item['tanggal_masuk']));
+            return $tanggal_item >= $tanggal_mulai && $tanggal_item <= $tanggal_akhir;
+        });
+    }
     
     $rowCount = 0;
     foreach ($stokObat as $row) {
@@ -652,68 +678,94 @@ public function exportExcelObatKeluar()
     $this->response->setContentType('application/pdf');
     $pdf->Output('laporan_stok_obat.pdf', 'I');
 }
+
+public function exportExcelStokObat()
+{
+    // Membuat objek Spreadsheet
+    $spreadsheet = new Spreadsheet();
+    $sheet = $spreadsheet->getActiveSheet();
     
-    public function exportExcelStokObat()
-    {
-        // Membuat objek Spreadsheet
-        $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
-        
-        // Set judul kolom
-        $sheet->setCellValue('A1', 'Laporan Stok Obat');
-        $sheet->mergeCells('A1:F1'); // Updated to F1 for 6 columns
-        $sheet->getStyle('A1')->getFont()->setBold(true);
-        $sheet->getStyle('A1')->getFont()->setSize(14);
-        $sheet->getStyle('A1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-        
-        // Set header tabel
-        $sheet->setCellValue('A3', 'ID Obat');
-        $sheet->setCellValue('B3', 'Nama Obat');
-        $sheet->setCellValue('C3', 'Jumlah Stok');
-        $sheet->setCellValue('D3', 'Satuan');
-        $sheet->setCellValue('E3', 'Tanggal Masuk');
-        $sheet->setCellValue('F3', 'Tanggal Kadaluwarsa');
-        
-        $sheet->getStyle('A3:F3')->getFont()->setBold(true);
-        $sheet->getStyle('A3:F3')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
-        $sheet->getStyle('A3:F3')->getFill()->getStartColor()->setARGB('FFCCCCCC');
-        
-        // Ambil data stok obat dengan tanggal masuk
-        $cari = $this->request->getGet('cari') ?? '';
-        $stokObat = $this->stokObatModel->getStokObatWithTanggalMasuk($cari);
-        
-        $row = 4;
-        foreach ($stokObat as $data) {
-            $sheet->setCellValue('A' . $row, $data['id_obat']);
-            $sheet->setCellValue('B' . $row, $data['nama_obat']);
-            $sheet->setCellValue('C' . $row, $data['jumlah_stok']);
-            $sheet->setCellValue('D' . $row, $data['satuan']);
-            $sheet->setCellValue('E' . $row, $data['tanggal_masuk'] ? date('d-m-Y', strtotime($data['tanggal_masuk'])) : '-');
-            $sheet->setCellValue('F' . $row, date('d-m-Y', strtotime($data['tanggal_kadaluwarsa'])));
-            $row++;
-        }
-        
-        // Auto size kolom
-        foreach (range('A', 'F') as $col) {
-            $sheet->getColumnDimension($col)->setAutoSize(true);
-        }
-        
-        // Set border untuk semua cell data
-        $styleArray = [
-            'borders' => [
-                'allBorders' => [
-                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
-                ],
-            ],
-        ];
-        $sheet->getStyle('A3:F' . ($row - 1))->applyFromArray($styleArray);
-        
-        // Set header untuk download
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="laporan_stok_obat.xlsx"');
-        header('Cache-Control: max-age=0');
-        
-        $writer = new Xlsx($spreadsheet);
-        $writer->save('php://output');
+    // Ambil parameter filter dari GET request
+    $tanggal_mulai = $this->request->getGet('tanggal_mulai');
+    $tanggal_akhir = $this->request->getGet('tanggal_akhir');
+    $cari = $this->request->getGet('cari') ?? '';
+    
+    // Set judul kolom
+    $sheet->setCellValue('A1', 'Laporan Stok Obat');
+    $sheet->mergeCells('A1:F1'); // Updated to F1 for 6 columns
+    $sheet->getStyle('A1')->getFont()->setBold(true);
+    $sheet->getStyle('A1')->getFont()->setSize(14);
+    $sheet->getStyle('A1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+    
+    // Tambahkan informasi periode jika ada filter
+    if (!empty($tanggal_mulai) && !empty($tanggal_akhir)) {
+        $sheet->setCellValue('A2', 'Periode: ' . date('d-m-Y', strtotime($tanggal_mulai)) . ' s/d ' . date('d-m-Y', strtotime($tanggal_akhir)));
+        $sheet->mergeCells('A2:F2');
+        $sheet->getStyle('A2')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $headerRow = 4;
+    } else {
+        $headerRow = 3;
     }
+    
+    // Set header tabel
+    $sheet->setCellValue('A' . $headerRow, 'ID Obat');
+    $sheet->setCellValue('B' . $headerRow, 'Nama Obat');
+    $sheet->setCellValue('C' . $headerRow, 'Jumlah Stok');
+    $sheet->setCellValue('D' . $headerRow, 'Satuan');
+    $sheet->setCellValue('E' . $headerRow, 'Tanggal Masuk');
+    $sheet->setCellValue('F' . $headerRow, 'Tanggal Kadaluwarsa');
+    
+    $sheet->getStyle('A' . $headerRow . ':F' . $headerRow)->getFont()->setBold(true);
+    $sheet->getStyle('A' . $headerRow . ':F' . $headerRow)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+    $sheet->getStyle('A' . $headerRow . ':F' . $headerRow)->getFill()->getStartColor()->setARGB('FFCCCCCC');
+    
+    // Ambil data stok obat dengan filter yang sama seperti di filterStokObat()
+    $stokObat = $this->stokObatModel->getStokObatWithTanggalMasuk($cari);
+    
+    // Filter berdasarkan tanggal_masuk jika ada (sama seperti di filterStokObat)
+    if (!empty($tanggal_mulai) && !empty($tanggal_akhir)) {
+        $stokObat = array_filter($stokObat, function($item) use ($tanggal_mulai, $tanggal_akhir) {
+            if (empty($item['tanggal_masuk'])) {
+                return false; // Exclude items without tanggal_masuk
+            }
+            
+            $tanggal_item = date('Y-m-d', strtotime($item['tanggal_masuk']));
+            return $tanggal_item >= $tanggal_mulai && $tanggal_item <= $tanggal_akhir;
+        });
+    }
+    
+    $row = $headerRow + 1;
+    foreach ($stokObat as $data) {
+        $sheet->setCellValue('A' . $row, $data['id_obat']);
+        $sheet->setCellValue('B' . $row, $data['nama_obat']);
+        $sheet->setCellValue('C' . $row, $data['jumlah_stok']);
+        $sheet->setCellValue('D' . $row, $data['satuan']);
+        $sheet->setCellValue('E' . $row, $data['tanggal_masuk'] ? date('d-m-Y', strtotime($data['tanggal_masuk'])) : '-');
+        $sheet->setCellValue('F' . $row, date('d-m-Y', strtotime($data['tanggal_kadaluwarsa'])));
+        $row++;
+    }
+    
+    // Auto size kolom
+    foreach (range('A', 'F') as $col) {
+        $sheet->getColumnDimension($col)->setAutoSize(true);
+    }
+    
+    // Set border untuk semua cell data
+    $styleArray = [
+        'borders' => [
+            'allBorders' => [
+                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+            ],
+        ],
+    ];
+    $sheet->getStyle('A' . $headerRow . ':F' . ($row - 1))->applyFromArray($styleArray);
+    
+    // Set header untuk download
+    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    header('Content-Disposition: attachment;filename="laporan_stok_obat.xlsx"');
+    header('Cache-Control: max-age=0');
+    
+    $writer = new Xlsx($spreadsheet);
+    $writer->save('php://output');
+}
 }
