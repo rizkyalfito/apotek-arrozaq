@@ -81,7 +81,7 @@
   $(document).ready(function() {
     $('#tabelLaporanStokObat').DataTable({
       language: {
-        lengthMenu: "Tampilkan *MENU* data per halaman",
+        lengthMenu: "Tampilkan _MENU_ data per halaman",
         zeroRecords: "Tidak ditemukan data yang sesuai",
         info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
         infoEmpty: "Menampilkan 0 sampai 0 dari 0 data",

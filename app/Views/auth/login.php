@@ -7,7 +7,7 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #f8f9fa;
+            background-color:rgb(223, 228, 232);
         }
         .login-container {
             width: 100%;
@@ -18,9 +18,13 @@
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             border: none;
+            background-image: url('https://images.unsplash.com/photo-1557683316-973673baf926');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
         }
         .card-header {
-            background-color: #007bff;
+            background-color:rgb(8, 138, 4);
             color: white;
             text-align: center;
             font-weight: bold;
@@ -30,16 +34,16 @@
             border: none;
         }
         .btn-login {
-            background-color: #007bff;
+            background-color:rgb(8, 138, 4);
             color: white;
             font-weight: 500;
             padding: 10px;
             border-radius: 5px;
         }
         .input-group-text {
-            background-color: #f8f9fa;
+            background-color:rgb(223, 228, 232);
             border-right: none;
-            color: #6c757d;
+            color:rgb(223, 228, 232);
         }
         .form-control {
             border-left: none;
@@ -48,15 +52,15 @@
             margin-bottom: 20px;
         }
         .divider {
-            border-top: 1px solid #dee2e6;
+            border-top: 1px solidrgb(43, 83, 123);
             margin: 15px 0;
         }
         .signup-link {
-            color: #007bff;
+            color:rgb(223, 228, 232);
             text-decoration: none;
         }
         .forgot-link {
-            color: #6c757d;
+            color:rgb(223, 228, 232);
             text-decoration: none;
         }
     </style>
