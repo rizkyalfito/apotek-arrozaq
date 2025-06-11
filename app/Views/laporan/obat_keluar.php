@@ -10,23 +10,28 @@
       <div class="card-body">
         <form action="<?= base_url('laporan/obat-keluar/filter') ?>" method="post" class="mb-4">
           <div class="row">
-            <div class="col-md-4">
+            <div class="col-md-3">
               <div class="form-group">
                 <label for="tanggal_mulai">Tanggal Mulai</label>
                 <input type="date" class="form-control" id="tanggal_mulai" name="tanggal_mulai" 
                        value="<?= isset($tanggal_mulai) ? $tanggal_mulai : date('Y-m-01') ?>" required>
               </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
               <div class="form-group">
                 <label for="tanggal_akhir">Tanggal Akhir</label>
                 <input type="date" class="form-control" id="tanggal_akhir" name="tanggal_akhir" 
                        value="<?= isset($tanggal_akhir) ? $tanggal_akhir : date('Y-m-d') ?>" required>
               </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-6">
               <div class="form-group" style="margin-top: 32px;">
-                <button type="submit" class="btn btn-primary">Filter</button>
+                <button type="submit" class="btn btn-primary">
+                  <i class="fas fa-filter"></i> Filter
+                </button>
+                <a href="<?= base_url('laporan/obat-keluar/filter-hari-ini') ?>" class="btn btn-info">
+                  <i class="fas fa-calendar-day"></i> Hari Ini
+                </a>
                 <a href="<?= base_url('laporan/obat-keluar/export-pdf') ?><?= isset($tanggal_mulai) ? '?tanggal_mulai='.$tanggal_mulai.'&tanggal_akhir='.$tanggal_akhir : '' ?>" class="btn btn-danger" target="_blank">
                   <i class="fas fa-file-pdf"></i> Export PDF
                 </a>
@@ -37,6 +42,17 @@
             </div>
           </div>
         </form>
+
+        <!-- Info periode yang sedang ditampilkan -->
+        <?php if (isset($tanggal_mulai) && isset($tanggal_akhir)): ?>
+          <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i>
+            <strong>Periode:</strong> <?= date('d-m-Y', strtotime($tanggal_mulai)) ?> s/d <?= date('d-m-Y', strtotime($tanggal_akhir)) ?>
+            <?php if ($tanggal_mulai == date('Y-m-d') && $tanggal_akhir == date('Y-m-d')): ?>
+              <span class="badge badge-success ml-2">Hari Ini</span>
+            <?php endif; ?>
+          </div>
+        <?php endif; ?>
         
         <div class="table-responsive">
           <table id="tabelLaporanObatKeluar" class="table table-bordered table-striped">
