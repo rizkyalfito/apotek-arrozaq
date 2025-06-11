@@ -379,7 +379,7 @@ public function exportExcelObatMasuk()
         $pdf->SetFillColor(220, 220, 220); // Light gray background for header
         
         // Column widths (adjusted for new columns)
-        $colWidth = [25, 18, 50, 18, 25, 25, 35, 30, 44];
+        $colWidth = [30, 18, 50, 18, 25, 25, 35, 30, 44];
         
         $pdf->Cell($colWidth[0], 8, 'Kode Transaksi', 1, 0, 'C', true);
         $pdf->Cell($colWidth[1], 8, 'ID Obat', 1, 0, 'C', true);
