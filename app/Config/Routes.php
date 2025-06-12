@@ -88,6 +88,7 @@ $routes->group('', ['filter' => 'owner'], function ($routes) {
     $routes->post('laporan/obat-keluar/filter', 'Laporan::filterObatKeluar');
     $routes->get('laporan/obat-keluar/export-pdf', 'Laporan::exportPdfObatKeluar');
     $routes->get('laporan/obat-keluar/export-excel', 'Laporan::exportExcelObatKeluar');
+    $routes->get('laporan/obat-keluar/filter-hari-ini', 'Laporan::filterObatKeluarHariIni');
     $routes->get('laporan/stok-obat', 'Laporan::stokObat');
     $routes->post('laporan/stok-obat/filter', 'Laporan::filterStokObat');
     $routes->get('laporan/stok-obat/export-pdf', 'Laporan::exportPdfStokObat');
