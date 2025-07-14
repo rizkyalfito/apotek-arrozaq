@@ -26,32 +26,17 @@
             <div class="col-md-4">
               <div class="form-group" style="margin-top: 32px;">
                 <button type="submit" class="btn btn-primary">Filter</button>
-                
-                <?php 
-                // Build export URL with current filter parameters
-                $exportParams = [];
-                if (isset($tanggal_mulai) && !empty($tanggal_mulai)) {
-                    $exportParams['tanggal_mulai'] = $tanggal_mulai;
-                }
-                if (isset($tanggal_akhir) && !empty($tanggal_akhir)) {
-                    $exportParams['tanggal_akhir'] = $tanggal_akhir;
-                }
-                if (isset($cari) && !empty($cari)) {
-                    $exportParams['cari'] = $cari;
-                }
-                $queryString = !empty($exportParams) ? '?' . http_build_query($exportParams) : '';
-                ?>
-                
-                <a href="<?= base_url('laporan/stok-obat/export-pdf') . $queryString ?>" class="btn btn-danger" target="_blank">
+                <a href="<?= base_url('laporan/stok-obat/export-pdf') ?>" class="btn btn-danger" target="_blank">
                   <i class="fas fa-file-pdf"></i> Export PDF
                 </a>
-                <a href="<?= base_url('laporan/stok-obat/export-excel') . $queryString ?>" class="btn btn-success">
+                <a href="<?= base_url('laporan/stok-obat/export-excel') ?>" class="btn btn-success">
                   <i class="fas fa-file-excel"></i> Export Excel
                 </a>
               </div>
             </div>
           </div>
         </form>
+        
         <div class="table-responsive">
           <table id="tabelLaporanStokObat" class="table table-bordered table-striped">
             <thead>
@@ -96,6 +81,7 @@
   $(document).ready(function() {
     $('#tabelLaporanStokObat').DataTable({
       language: {
+        lengthMenu: "Tampilkan _MENU_ data per halaman",
         zeroRecords: "Tidak ditemukan data yang sesuai",
         info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
         infoEmpty: "Menampilkan 0 sampai 0 dari 0 data",

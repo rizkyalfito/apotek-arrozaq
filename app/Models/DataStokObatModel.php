@@ -23,7 +23,7 @@ class DataStokObatModel extends Model
     {
         $stockObatModel = $this->db->table('data_stok_obat');
 
-        $result = $stockObatModel->where('jumlah_stok <', 5)->get()->getResultArray();
+        $result = $stockObatModel->where('jumlah_stok <=', 5)->get()->getResultArray();
 
         return $result;
     }
