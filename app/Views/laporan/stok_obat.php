@@ -62,7 +62,7 @@
                 <th>Jumlah Stok</th>
                 <th>Satuan</th>
                 <th>Tanggal Masuk</th>
-                <th>Tanggal Kadaluwarsa</th>
+                <th>Tanggal Kedaluwarsa</th>
               </tr>
             </thead>
             <tbody>

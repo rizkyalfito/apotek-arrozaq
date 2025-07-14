@@ -37,7 +37,7 @@
                 <?php if (count($dataNotificationExpiry) > 0) : ?>
                     <div class="dropdown-divider"></div>
                     <span class="dropdown-item dropdown-header text-danger">
-                        <i class="fas fa-exclamation-triangle"></i> Obat Mendekati Kadaluarsa
+                        <i class="fas fa-exclamation-triangle"></i> Obat Mendekati Kedaluarsa
                     </span>
                     <?php foreach ($dataNotificationExpiry as $expiry) : ?>
                         <a href="<?= base_url('obat') ?>" class="dropdown-item">
@@ -62,7 +62,7 @@
                                     <p class="text-sm"><?= $expiry['status_kadaluarsa'] ?></p>
                                     <p class="text-sm text-muted">
                                         <i class="far fa-calendar-alt mr-1"></i> 
-                                        Kadaluarsa: <?= date('d/m/Y', strtotime($expiry['tanggal_kadaluwarsa'])) ?>
+                                        Kedaluarsa: <?= date('d/m/Y', strtotime($expiry['tanggal_kadaluwarsa'])) ?>
                                     </p>
                                 </div>
                             </div>

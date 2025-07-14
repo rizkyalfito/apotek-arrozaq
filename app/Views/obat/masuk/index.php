@@ -40,7 +40,7 @@
                 <th>Jumlah</th>
                 <th>Satuan</th>
                 <th>Tanggal Masuk</th>
-                <th>Tanggal Kadaluwarsa</th>
+                <th>Tanggal Kedaluwarsa</th>
                 <th>Aksi</th>
               </tr>
             </thead>

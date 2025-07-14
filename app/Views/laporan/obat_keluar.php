@@ -67,7 +67,7 @@
               <th>Tanggal Penjualan</th>
               <th>Harga Jual</th>
               <th>Harga Total</th>
-              <th>Tanggal Kadaluwarsa</th>
+              <th>Tanggal Kedaluwarsa</th>
             </tr>
           </thead>
           <tbody>

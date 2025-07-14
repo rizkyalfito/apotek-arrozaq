@@ -34,11 +34,12 @@ class DataStokObatModel extends Model
         
         $today = date('Y-m-d');
         
-        $sevenDaysFromNow = date('Y-m-d', strtotime('+7 days'));
+        // Ubah nama variabel agar lebih jelas
+        $thirtyDaysFromNow = date('Y-m-d', strtotime('+30 days'));
         
         $builder->select('id_obat, nama_obat, jumlah_stok, satuan, tanggal_kadaluwarsa');
         $builder->where('tanggal_kadaluwarsa >=', $today);
-        $builder->where('tanggal_kadaluwarsa <=', $sevenDaysFromNow);
+        $builder->where('tanggal_kadaluwarsa <=', $thirtyDaysFromNow);
         $builder->orderBy('tanggal_kadaluwarsa', 'ASC');
         
         $result = $builder->get()->getResultArray();
@@ -50,21 +51,27 @@ class DataStokObatModel extends Model
             
             $obat['hari_tersisa'] = $selisihHari;
             
+            // Perbaiki logika untuk rentang 30 hari
             if ($selisihHari == 0) {
-                $obat['status_kadaluarsa'] = 'Kadaluarsa Hari Ini';
+                $obat['status_kadaluarsa'] = 'Kedaluarsa Hari Ini';
                 $obat['level_urgency'] = 'critical';
             } elseif ($selisihHari <= 2) {
                 $obat['status_kadaluarsa'] = 'Sangat Mendesak';
-                $obat['level_urgency'] = 'high';
+                $obat['level_urgency'] = 'critical';
             } elseif ($selisihHari <= 7) {
+                $obat['status_kadaluarsa'] = 'Perlu Perhatian Segera';
+                $obat['level_urgency'] = 'high';
+            } elseif ($selisihHari <= 14) {
                 $obat['status_kadaluarsa'] = 'Perlu Perhatian';
                 $obat['level_urgency'] = 'medium';
+            } elseif ($selisihHari <= 30) {
+                $obat['status_kadaluarsa'] = 'Monitoring';
+                $obat['level_urgency'] = 'low';
             }
         }
         
         return $result;
     }
-
     public function getAllNotifications()
     {
         $notifications = [
